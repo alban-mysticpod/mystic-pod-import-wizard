@@ -19,12 +19,6 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (files.length === 0 && folderId) {
-      loadFiles();
-    }
-  }, [folderId, files.length, loadFiles]);
-
   const loadFiles = useCallback(async () => {
     setIsLoading(true);
     setError('');
@@ -42,6 +36,12 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
       setIsLoading(false);
     }
   }, [folderId]);
+
+  useEffect(() => {
+    if (files.length === 0 && folderId) {
+      loadFiles();
+    }
+  }, [folderId, files.length, loadFiles]);
 
   const handleNext = () => {
     onNext(currentFiles);

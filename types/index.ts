@@ -2,6 +2,7 @@ export interface DriveValidateResponse {
   folderId: string;
   fileCount: number;
   sample: Array<{ id: string; name: string }>;
+  message?: string; // Pour gérer les réponses d'erreur de n8n
 }
 
 export interface PrintifyShop {
@@ -13,6 +14,7 @@ export interface PrintifyShop {
 export interface PrintifyTestResponse {
   shops: PrintifyShop[];
   tokenRef: string;
+  message?: string; // Pour gérer les réponses d'erreur de n8n
 }
 
 export interface DriveFile {

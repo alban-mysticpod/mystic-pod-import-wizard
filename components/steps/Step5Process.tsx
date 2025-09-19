@@ -22,14 +22,6 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
   const [importResult, setImportResult] = useState<any>(null);
   const [hasStarted, setHasStarted] = useState(false);
 
-  useEffect(() => {
-    // Éviter les appels multiples (React Strict Mode peut causer des doubles appels)
-    if (!hasStarted) {
-      setHasStarted(true);
-      startImport();
-    }
-  }, [hasStarted, startImport]);
-
   const startImport = useCallback(async () => {
     // Éviter les appels multiples pendant qu'un import est en cours
     if (importState === 'importing') {
@@ -54,6 +46,14 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
       setImportState('error');
     }
   }, [folderId, tokenRef, shopId, importState]);
+
+  useEffect(() => {
+    // Éviter les appels multiples (React Strict Mode peut causer des doubles appels)
+    if (!hasStarted) {
+      setHasStarted(true);
+      startImport();
+    }
+  }, [hasStarted, startImport]);
 
   if (importState === 'importing') {
     return (
