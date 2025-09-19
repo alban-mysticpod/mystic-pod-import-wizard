@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { fetchImages } from '@/lib/api';
@@ -23,9 +23,9 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
     if (files.length === 0 && folderId) {
       loadFiles();
     }
-  }, [folderId, files.length]);
+  }, [folderId, files.length, loadFiles]);
 
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     setIsLoading(true);
     setError('');
 
@@ -41,7 +41,7 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [folderId]);
 
   const handleNext = () => {
     onNext(currentFiles);

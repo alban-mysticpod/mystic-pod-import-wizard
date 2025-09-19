@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { importToPrintify } from '@/lib/api';
@@ -28,9 +28,9 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
       setHasStarted(true);
       startImport();
     }
-  }, [hasStarted]);
+  }, [hasStarted, startImport]);
 
-  const startImport = async () => {
+  const startImport = useCallback(async () => {
     // Éviter les appels multiples pendant qu'un import est en cours
     if (importState === 'importing') {
       console.log('⚠️ Import already in progress, skipping...');
@@ -53,7 +53,7 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
       setError(errorMessage);
       setImportState('error');
     }
-  };
+  }, [folderId, tokenRef, shopId, importState]);
 
   if (importState === 'importing') {
     return (
