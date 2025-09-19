@@ -18,6 +18,7 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
   const [currentFiles, setCurrentFiles] = useState<DriveFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
+  const [hasLoaded, setHasLoaded] = useState(files.length > 0);
 
   const loadFiles = useCallback(async () => {
     setIsLoading(true);
@@ -28,6 +29,7 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
       const result = await fetchImages(folderId);
       console.log('✅ Files fetched:', result);
       setCurrentFiles(result.files);
+      setHasLoaded(true);
     } catch (err) {
       console.error('❌ Failed to fetch files:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load files';
@@ -38,10 +40,11 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
   }, [folderId]);
 
   useEffect(() => {
-    if (files.length === 0 && folderId) {
+    // Charger les fichiers seulement si pas encore chargés et qu'on a un folderId
+    if (!hasLoaded && folderId) {
       loadFiles();
     }
-  }, [folderId, files.length, loadFiles]);
+  }, [folderId, hasLoaded, loadFiles]);
 
   const handleNext = () => {
     onNext(currentFiles);

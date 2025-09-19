@@ -23,12 +23,6 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
   const [hasStarted, setHasStarted] = useState(false);
 
   const startImport = useCallback(async () => {
-    // Éviter les appels multiples pendant qu'un import est en cours
-    if (importState === 'importing') {
-      console.log('⚠️ Import already in progress, skipping...');
-      return;
-    }
-
     setImportState('importing');
     setError('');
 
@@ -45,7 +39,7 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
       setError(errorMessage);
       setImportState('error');
     }
-  }, [folderId, tokenRef, shopId, importState]);
+  }, [folderId, tokenRef, shopId]); // Supprimé importState de la dépendance
 
   useEffect(() => {
     // Éviter les appels multiples (React Strict Mode peut causer des doubles appels)

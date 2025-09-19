@@ -100,7 +100,7 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
   return (
     <Card
       title="Connect Your Google Drive Folder"
-      description="Share your design folder with admin@mysticpod.com and paste the folder URL below."
+      description="Share your design folder with alban@mysticpod.com and paste the folder URL below."
     >
       <div className="space-y-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -110,7 +110,7 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
               <p className="font-medium text-blue-900 mb-1">Important:</p>
               <p className="text-blue-700">
                 Make sure your Google Drive folder is shared with{' '}
-                <strong>admin@mysticpod.com</strong> with "Editor" permissions.
+                <strong>alban@mysticpod.com</strong> with "Editor" permissions.
               </p>
             </div>
           </div>

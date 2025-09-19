@@ -108,7 +108,7 @@ export function Step2PrintifyToken({ apiToken, tokenRef, shops, onNext }: Step2P
             <div className="text-sm">
               <p className="font-medium text-yellow-900 mb-1">Where to find your API token:</p>
               <p className="text-yellow-700 mb-2">
-                Go to your Printify dashboard → Settings → API → Generate new token
+                Go to your Printify dashboard → Account → Connections → Generate new token
               </p>
               <a
                 href="https://printify.com/app/account/api"
