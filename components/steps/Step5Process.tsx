@@ -16,14 +16,26 @@ interface Step5Props {
 
 type ImportState = 'importing' | 'success' | 'error';
 
+// Global map to track import state across component re-renders
+const importState = new Map<string, boolean>();
+
 export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart }: Step5Props) {
-  const [importState, setImportState] = useState<ImportState>('importing');
+  const [currentState, setCurrentState] = useState<ImportState>('importing');
   const [error, setError] = useState('');
   const [importResult, setImportResult] = useState<any>(null);
-  const [hasStarted, setHasStarted] = useState(false);
 
   const startImport = useCallback(async () => {
-    setImportState('importing');
+    // Create a unique key for this import session
+    const importKey = `${folderId}-${tokenRef}-${shopId}`;
+    
+    // Check global import state to prevent double calls
+    if (importState.get(importKey)) {
+      console.log('🛑 Already importing for key:', importKey, '- skipping duplicate call');
+      return;
+    }
+
+    importState.set(importKey, true);
+    setCurrentState('importing');
     setError('');
 
     try {
@@ -32,24 +44,26 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
       console.log('✅ Import completed:', result);
       
       setImportResult(result);
-      setImportState('success');
+      setCurrentState('success');
     } catch (err) {
       console.error('❌ Import failed:', err);
       const errorMessage = err instanceof Error ? err.message : 'Import failed';
       setError(errorMessage);
-      setImportState('error');
+      setCurrentState('error');
+      // Reset import state on error to allow retry
+      importState.set(importKey, false);
     }
-  }, [folderId, tokenRef, shopId]); // Supprimé importState de la dépendance
+  }, [folderId, tokenRef, shopId]);
 
   useEffect(() => {
-    // Éviter les appels multiples (React Strict Mode peut causer des doubles appels)
-    if (!hasStarted) {
-      setHasStarted(true);
+    // Start import immediately when component mounts
+    const importKey = `${folderId}-${tokenRef}-${shopId}`;
+    if (!importState.get(importKey)) {
       startImport();
     }
-  }, [hasStarted, startImport]);
+  }, [folderId, tokenRef, shopId, startImport]);
 
-  if (importState === 'importing') {
+  if (currentState === 'importing') {
     return (
       <Card>
         <div className="text-center py-12">
@@ -78,7 +92,7 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
     );
   }
 
-  if (importState === 'success') {
+  if (currentState === 'success') {
     return (
       <Card>
         <div className="text-center py-12">
@@ -139,7 +153,7 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
     );
   }
 
-  if (importState === 'error') {
+  if (currentState === 'error') {
     return (
       <Card>
         <div className="text-center py-12">
@@ -161,7 +175,9 @@ export function Step5Process({ folderId, tokenRef, shopId, fileCount, onRestart 
           <div className="space-y-4">
             <Button
               onClick={() => {
-                setHasStarted(false); // Réinitialiser le flag pour permettre un nouveau retry
+                // Réinitialiser le state global pour permettre un nouveau retry
+                const importKey = `${folderId}-${tokenRef}-${shopId}`;
+                importState.set(importKey, false);
                 startImport();
               }}
               variant="primary"

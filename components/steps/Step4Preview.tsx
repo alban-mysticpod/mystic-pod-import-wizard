@@ -14,13 +14,22 @@ interface Step4Props {
   onNext: (files: DriveFile[]) => void;
 }
 
+// Global map to track loading state across component re-renders
+const loadingState = new Map<string, boolean>();
+
 export function Step4Preview({ folderId, files, onNext }: Step4Props) {
   const [currentFiles, setCurrentFiles] = useState<DriveFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
-  const [hasLoaded, setHasLoaded] = useState(files.length > 0);
 
   const loadFiles = useCallback(async () => {
+    // Check global loading state to prevent double calls
+    if (loadingState.get(folderId)) {
+      console.log('🛑 Already loading files for folder:', folderId, '- skipping duplicate call');
+      return;
+    }
+
+    loadingState.set(folderId, true);
     setIsLoading(true);
     setError('');
 
@@ -29,22 +38,23 @@ export function Step4Preview({ folderId, files, onNext }: Step4Props) {
       const result = await fetchImages(folderId);
       console.log('✅ Files fetched:', result);
       setCurrentFiles(result.files);
-      setHasLoaded(true);
     } catch (err) {
       console.error('❌ Failed to fetch files:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load files';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      // Keep the loading state as true to prevent future calls for the same folder
+      // loadingState.set(folderId, true); // Already set above
     }
   }, [folderId]);
 
   useEffect(() => {
-    // Charger les fichiers seulement si pas encore chargés et qu'on a un folderId
-    if (!hasLoaded && folderId) {
+    // Only load if we have a folderId, no files yet, and haven't already loaded this folder
+    if (folderId && files.length === 0 && !loadingState.get(folderId)) {
       loadFiles();
     }
-  }, [folderId, hasLoaded, loadFiles]);
+  }, [folderId, files.length, loadFiles]);
 
   const handleNext = () => {
     onNext(currentFiles);
