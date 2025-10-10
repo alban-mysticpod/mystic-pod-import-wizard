@@ -42,8 +42,11 @@ export function Step3ChooseBlueprint({ selectedBlueprint, onNext, onBack }: Step
       }
 
       const data = await response.json();
-      console.log(`✅ Loaded ${data.length} blueprints`);
-      setBlueprints(data);
+      
+      // Handle both direct array and { blueprints: [...] } response formats
+      const blueprintsArray = Array.isArray(data) ? data : (data.blueprints || []);
+      console.log(`✅ Loaded ${blueprintsArray.length} blueprints`);
+      setBlueprints(blueprintsArray);
     } catch (err) {
       console.error('❌ Failed to fetch blueprints:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load blueprints';
