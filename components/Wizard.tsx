@@ -5,9 +5,11 @@ import { Stepper } from './Stepper';
 import { Step1DriveFolder } from './steps/Step1DriveFolder';
 import { Step2PrintifyToken } from './steps/Step2PrintifyToken';
 import { Step3ChooseShop } from './steps/Step3ChooseShop';
-import { Step4Preview } from './steps/Step4Preview';
-import { Step5Process } from './steps/Step5Process';
-import { WizardState, PrintifyShop, DriveFile } from '@/types';
+import { Step4ChooseBlueprint } from './steps/Step4ChooseBlueprint';
+import { Step5ChoosePrintProvider } from './steps/Step5ChoosePrintProvider';
+import { Step6Preview } from './steps/Step6Preview';
+import { Step7Process } from './steps/Step7Process';
+import { WizardState, PrintifyShop, DriveFile, Blueprint } from '@/types';
 
 const initialState: WizardState = {
   currentStep: 1,
@@ -19,6 +21,8 @@ const initialState: WizardState = {
   tokenRef: '',
   shops: [],
   selectedShopId: null,
+  selectedBlueprint: null,
+  selectedPrintProviderId: null,
   files: [],
   session: '',
   importProgress: 0,
@@ -68,17 +72,30 @@ export function Wizard() {
     });
   }, [updateState]);
 
-  const handleStep4Next = useCallback((files: DriveFile[]) => {
+  const handleStep4Next = useCallback((blueprint: Blueprint) => {
+    updateState({
+      selectedBlueprint: blueprint,
+      currentStep: 5,
+    });
+  }, [updateState]);
+
+  const handleStep5Next = useCallback((printProviderId: number) => {
+    updateState({
+      selectedPrintProviderId: printProviderId,
+      currentStep: 6,
+    });
+  }, [updateState]);
+
+  const handleStep6Next = useCallback((files: DriveFile[]) => {
     updateState({
       files,
-      currentStep: 5,
+      currentStep: 7,
     });
   }, [updateState]);
 
   const handleRestart = useCallback(() => {
     setState(initialState);
   }, []);
-
 
   const shouldSkipStep3 = state.shops.length <= 1;
 
@@ -100,8 +117,6 @@ export function Wizard() {
           {state.currentStep === 1 && (
             <Step1DriveFolder
               folderUrl={state.folderUrl}
-              fileCount={state.fileCount}
-              sampleFiles={state.sampleFiles}
               onNext={handleStep1Next}
             />
           )}
@@ -109,35 +124,48 @@ export function Wizard() {
           {state.currentStep === 2 && (
             <Step2PrintifyToken
               apiToken={state.apiToken}
-              tokenRef={state.tokenRef}
-              shops={state.shops}
               onNext={handleStep2Next}
             />
           )}
 
-          {state.currentStep === 3 && !shouldSkipStep3 && (
+          {state.currentStep === 3 && (
             <Step3ChooseShop
-              tokenRef={state.tokenRef}
               shops={state.shops}
               selectedShopId={state.selectedShopId}
+              tokenRef={state.tokenRef}
               onNext={handleStep3Next}
             />
           )}
 
           {state.currentStep === 4 && (
-            <Step4Preview
-              folderId={state.folderId}
-              files={state.files}
+            <Step4ChooseBlueprint
+              selectedBlueprint={state.selectedBlueprint}
               onNext={handleStep4Next}
             />
           )}
 
-          {state.currentStep === 5 && (
-            <Step5Process
+          {state.currentStep === 5 && state.selectedBlueprint && (
+            <Step5ChoosePrintProvider
+              blueprint={state.selectedBlueprint}
+              selectedPrintProviderId={state.selectedPrintProviderId}
+              onNext={handleStep5Next}
+            />
+          )}
+
+          {state.currentStep === 6 && (
+            <Step6Preview
+              folderId={state.folderId}
+              files={state.files}
+              onNext={handleStep6Next}
+            />
+          )}
+
+          {state.currentStep === 7 && state.selectedShopId && (
+            <Step7Process
               folderId={state.folderId}
               tokenRef={state.tokenRef}
-              shopId={state.selectedShopId!}
-              fileCount={state.files.length}
+              shopId={state.selectedShopId}
+              fileCount={state.fileCount}
               onRestart={handleRestart}
             />
           )}

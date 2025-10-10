@@ -11,8 +11,9 @@ export function Stepper({ currentStep, skipStep3 = false }: StepperProps) {
   const visibleSteps = skipStep3 ? STEPS.filter(step => step.id !== 3) : STEPS;
 
   return (
-    <div className="w-full max-w-4xl mx-auto mb-8">
-      <div className="flex items-center justify-between">
+    <div className="w-full max-w-6xl mx-auto mb-8">
+      {/* Desktop: Horizontal Stepper */}
+      <div className="hidden lg:flex items-center justify-between">
         {visibleSteps.map((step, index) => {
           const isCompleted = step.id < currentStep;
           const isCurrent = step.id === currentStep;
@@ -20,7 +21,7 @@ export function Stepper({ currentStep, skipStep3 = false }: StepperProps) {
 
           return (
             <div key={step.id} className="flex items-center flex-1">
-              <div className="flex items-center">
+              <div className="flex flex-col items-center">
                 {/* Step Circle */}
                 <div
                   className={cn(
@@ -40,10 +41,10 @@ export function Stepper({ currentStep, skipStep3 = false }: StepperProps) {
                 </div>
 
                 {/* Step Info */}
-                <div className="ml-4">
+                <div className="mt-2 text-center">
                   <div
                     className={cn(
-                      'text-sm font-medium transition-colors',
+                      'text-xs font-medium transition-colors',
                       isCompleted || isCurrent
                         ? 'text-gray-900'
                         : 'text-gray-500'
@@ -53,7 +54,7 @@ export function Stepper({ currentStep, skipStep3 = false }: StepperProps) {
                   </div>
                   <div
                     className={cn(
-                      'text-xs transition-colors',
+                      'text-xs transition-colors hidden xl:block',
                       isCompleted || isCurrent
                         ? 'text-gray-600'
                         : 'text-gray-400'
@@ -66,7 +67,7 @@ export function Stepper({ currentStep, skipStep3 = false }: StepperProps) {
 
               {/* Connector Line */}
               {!isLast && (
-                <div className="flex-1 mx-6">
+                <div className="flex-1 mx-2 mb-8">
                   <div
                     className={cn(
                       'h-0.5 transition-colors duration-300',
@@ -80,6 +81,26 @@ export function Stepper({ currentStep, skipStep3 = false }: StepperProps) {
             </div>
           );
         })}
+      </div>
+
+      {/* Mobile/Tablet: Compact Stepper */}
+      <div className="lg:hidden">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-gray-600">
+            Step {currentStep} of {visibleSteps.length}
+          </div>
+          <div className="text-sm font-medium text-gray-900">
+            {visibleSteps.find(s => s.id === currentStep)?.title}
+          </div>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${(currentStep / visibleSteps.length) * 100}%` }}
+          />
+        </div>
       </div>
     </div>
   );
