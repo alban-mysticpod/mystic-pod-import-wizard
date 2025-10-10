@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import type { PresetWithDetails } from '@/types';
+import type { Preset } from '@/types';
 
 interface PresetListProps {
-  presets: PresetWithDetails[];
-  onEdit: (preset: PresetWithDetails) => void;
+  presets: Preset[];
+  onEdit: (preset: Preset) => void;
   onDelete: (presetId: string) => Promise<void>;
 }
 
@@ -66,19 +66,12 @@ export function PresetList({ presets, onEdit, onDelete }: PresetListProps) {
                 📦 {preset.name}
               </h3>
               <div className="text-sm text-gray-600 space-y-1">
-                {preset.blueprint && (
-                  <p>
-                    <span className="font-medium">Blueprint:</span>{' '}
-                    {preset.blueprint.title} ({preset.blueprint.brand} - {preset.blueprint.model})
-                  </p>
-                )}
-                {preset.print_provider && (
-                  <p>
-                    <span className="font-medium">Print Provider:</span>{' '}
-                    {preset.print_provider.title}
-                    {preset.print_provider.location && ` (${preset.print_provider.location})`}
-                  </p>
-                )}
+                <p>
+                  <span className="font-medium">Blueprint ID:</span> {preset.blueprint_id}
+                </p>
+                <p>
+                  <span className="font-medium">Print Provider ID:</span> {preset.print_provider_id}
+                </p>
                 <p>
                   <span className="font-medium">Placements:</span>{' '}
                   {getPlacementCount(preset.placements)} configured

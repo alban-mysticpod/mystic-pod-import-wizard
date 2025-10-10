@@ -17,18 +17,14 @@ export async function GET() {
       );
     }
 
-    console.log(`📦 Fetching presets for user: ${userId}`);
+                console.log(`📦 Fetching presets for user: ${userId}`);
 
-    // Fetch presets with blueprint and print_provider details
-    const { data, error } = await supabaseAdmin
-      .from('presets')
-      .select(`
-        *,
-        blueprint:blueprints(id, title, brand, model, images),
-        print_provider:print_providers(id, title, location)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+                // Fetch presets for the user (simple query without joins for now)
+                const { data, error } = await supabaseAdmin
+                  .from('presets')
+                  .select('*')
+                  .eq('user_id', userId)
+                  .order('created_at', { ascending: false });
 
     if (error) {
       console.error('❌ Supabase error:', error);

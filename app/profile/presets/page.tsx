@@ -6,13 +6,13 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { PresetForm } from '@/components/PresetForm';
 import { PresetList } from '@/components/PresetList';
-import type { PresetWithDetails, PlacementConfig } from '@/types';
+import type { Preset, PlacementConfig } from '@/types';
 
 export default function PresetsPage() {
-  const [presets, setPresets] = useState<PresetWithDetails[]>([]);
+  const [presets, setPresets] = useState<Preset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingPreset, setEditingPreset] = useState<PresetWithDetails | null>(null);
+  const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function PresetsPage() {
     setShowForm(true);
   };
 
-  const handleEdit = (preset: PresetWithDetails) => {
+  const handleEdit = (preset: Preset) => {
     setEditingPreset(preset);
     setShowForm(true);
   };
