@@ -25,12 +25,29 @@ export interface DriveFile {
   webViewLink?: string;
 }
 
+// New Supabase file structure
+export interface SupabaseFile {
+  id: string;
+  user_id: string;
+  source: string; // Required: "drive"
+  drive_file_id?: string | null;
+  drive_folder_id?: string | null;
+  storage_path: string; // Required
+  file_name: string; // Required
+  file_ext?: string | null;
+  file_bytes?: number | null;
+  width: number; // Required
+  height: number; // Required
+  checksum?: string | null;
+  created_at: string;
+}
+
 export interface DriveListResponse {
   files: DriveFile[];
 }
 
 export interface FetchImagesResponse {
-  files: DriveFile[];
+  files: SupabaseFile[]; // Changed to use new Supabase structure
   totalCount: number;
 }
 
@@ -140,7 +157,7 @@ export interface WizardState {
   selectedShopId: number | null;
   selectedBlueprint: Blueprint | null;
   selectedPrintProviderId: number | null;
-  files: DriveFile[];
+  files: SupabaseFile[];
   session: string;
   importProgress: number;
   importLogs: string[];

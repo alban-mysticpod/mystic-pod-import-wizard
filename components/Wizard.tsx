@@ -8,7 +8,7 @@ import { Step3ChooseBlueprint } from './steps/Step3ChooseBlueprint';
 import { Step4ChoosePrintProvider } from './steps/Step4ChoosePrintProvider';
 import { Step5Preview } from './steps/Step5Preview';
 import { Step6Process } from './steps/Step6Process';
-import { WizardState, PrintifyShop, DriveFile, Blueprint } from '@/types';
+import { WizardState, PrintifyShop, SupabaseFile, Blueprint } from '@/types';
 
 const initialState: WizardState = {
   currentStep: 1,
@@ -84,7 +84,7 @@ export function Wizard() {
     });
   }, [updateState]);
 
-  const handleStep5Next = useCallback((files: DriveFile[]) => {
+  const handleStep5Next = useCallback((files: SupabaseFile[]) => {
     updateState({
       files,
       currentStep: 6,

@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { fetchImages } from '@/lib/api';
-import { DriveFile } from '@/types';
+import { SupabaseFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
 import { Upload, RefreshCw, ArrowLeft } from 'lucide-react';
 
 interface Step5Props {
   folderId: string;
-  files: DriveFile[];
-  onNext: (files: DriveFile[]) => void;
+  files: SupabaseFile[];
+  onNext: (files: SupabaseFile[]) => void;
   onBack?: () => void;
 }
 
@@ -19,7 +19,7 @@ interface Step5Props {
 const loadingState = new Map<string, boolean>();
 
 export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
-  const [currentFiles, setCurrentFiles] = useState<DriveFile[]>(files);
+  const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
 
@@ -120,7 +120,7 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
                   >
                     <div className="flex items-center space-x-3">
                       <div className="flex-shrink-0">
-                        {file.mimeType?.includes('image') ? (
+                        {file.file_name?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)$/) ? (
                           <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
@@ -131,14 +131,20 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate" title={file.name}>
-                          {file.name}
+                        <p className="text-sm font-medium text-gray-900 truncate" title={file.file_name}>
+                          {file.file_name}
                         </p>
-                        {file.mimeType && (
-                          <p className="text-xs text-gray-500">
-                            {file.mimeType}
-                          </p>
-                        )}
+                        <div className="text-xs text-gray-500 space-y-1">
+                          {file.width && file.height && (
+                            <p>{file.width} × {file.height}px</p>
+                          )}
+                          {file.file_bytes && (
+                            <p>{Math.round(file.file_bytes / 1024)}KB</p>
+                          )}
+                          {file.source && (
+                            <p>Source: {file.source}</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex-shrink-0">
