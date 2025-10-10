@@ -6,7 +6,7 @@ import { Card } from '@/components/Card';
 import { fetchImages } from '@/lib/api';
 import { SupabaseFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
-import { Upload, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Upload, RefreshCw, ArrowLeft, Check, Image as ImageIcon, Settings } from 'lucide-react';
 
 interface Step5Props {
   folderId: string;
@@ -20,6 +20,7 @@ const loadingState = new Map<string, boolean>();
 
 export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
 
@@ -58,7 +59,31 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
   }, [folderId, files.length, loadFiles]);
 
   const handleNext = () => {
-    onNext(currentFiles);
+    // Only pass selected files, or all files if none selected
+    const filesToProcess = selectedFiles.size > 0 
+      ? currentFiles.filter(file => selectedFiles.has(file.id))
+      : currentFiles;
+    onNext(filesToProcess);
+  };
+
+  const toggleFileSelection = (fileId: string) => {
+    setSelectedFiles(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(fileId)) {
+        newSet.delete(fileId);
+      } else {
+        newSet.add(fileId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllFiles = () => {
+    setSelectedFiles(new Set(currentFiles.map(file => file.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedFiles(new Set());
   };
 
   if (isLoading) {
@@ -110,51 +135,115 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
 
         {currentFiles.length > 0 && (
           <>
-            <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-              <h3 className="font-medium text-gray-900 mb-3">Files to be processed:</h3>
-              <div className="space-y-2">
-                {currentFiles.map((file, index) => (
+            {/* Selection Controls */}
+            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center gap-4">
+                <h3 className="font-medium text-gray-900">
+                  {selectedFiles.size > 0 
+                    ? `${selectedFiles.size} of ${currentFiles.length} selected`
+                    : `${currentFiles.length} designs ready`
+                  }
+                </h3>
+                {selectedFiles.size > 0 && (
+                  <Button
+                    onClick={clearSelection}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Clear Selection
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={selectAllFiles}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Select All
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex items-center gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Bulk Actions
+                </Button>
+              </div>
+            </div>
+
+            {/* Design Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
+              {currentFiles.map((file, index) => {
+                const isSelected = selectedFiles.has(file.id);
+                const isImage = file.file_name?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)$/);
+                
+                return (
                   <div
                     key={file.id || index}
-                    className="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm border"
+                    className={`relative bg-white rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg ${
+                      isSelected 
+                        ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => toggleFileSelection(file.id)}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0">
-                        {file.file_name?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)$/) ? (
-                          <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        ) : (
-                          <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        )}
+                    {/* Selection Checkbox */}
+                    <div className="absolute top-2 right-2 z-10">
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                        isSelected 
+                          ? 'bg-blue-500 border-blue-500 text-white' 
+                          : 'bg-white border-gray-300'
+                      }`}>
+                        {isSelected && <Check className="w-4 h-4" />}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate" title={file.file_name}>
-                          {file.file_name}
-                        </p>
-                        <div className="text-xs text-gray-500 space-y-1">
-                          {file.width && file.height && (
-                            <p>{file.width} × {file.height}px</p>
-                          )}
-                          {file.file_bytes && (
-                            <p>{Math.round(file.file_bytes / 1024)}KB</p>
-                          )}
+                    </div>
+
+                    {/* Image Preview */}
+                    <div className="aspect-square rounded-t-lg bg-gray-100 relative overflow-hidden">
+                      {isImage && file.storage_path ? (
+                        <img
+                          src={file.storage_path}
+                          alt={file.file_name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback to icon if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-full h-full flex items-center justify-center ${isImage ? 'hidden' : ''}`}>
+                        <ImageIcon className="w-8 h-8 text-gray-400" />
+                      </div>
+                    </div>
+
+                    {/* File Info */}
+                    <div className="p-3">
+                      <h4 className="text-sm font-medium text-gray-900 truncate mb-1" title={file.file_name}>
+                        {file.file_name}
+                      </h4>
+                      <div className="text-xs text-gray-500 space-y-1">
+                        {file.width && file.height && (
+                          <p>{file.width} × {file.height}px</p>
+                        )}
+                        {file.file_bytes && (
+                          <p>{Math.round(file.file_bytes / 1024)}KB</p>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Ready
+                          </span>
                           {file.source && (
-                            <p>Source: {file.source}</p>
+                            <span className="text-gray-400 capitalize">{file.source}</span>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Ready
-                      </span>
-                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -163,7 +252,10 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
                 <div className="text-sm">
                   <p className="font-medium text-blue-900 mb-1">Ready to import:</p>
                   <p className="text-blue-700">
-                    {formatFileCount(currentFiles.length)} will be uploaded to your Printify shop.
+                    {selectedFiles.size > 0 
+                      ? `${formatFileCount(selectedFiles.size)} selected file${selectedFiles.size !== 1 ? 's' : ''}`
+                      : formatFileCount(currentFiles.length)
+                    } will be uploaded to your Printify shop.
                     This process may take a few minutes depending on file sizes.
                   </p>
                 </div>
@@ -213,7 +305,7 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
             variant="success"
             size="lg"
           >
-            Import {currentFiles.length > 0 ? currentFiles.length : ''} files to Printify
+            Import {selectedFiles.size > 0 ? selectedFiles.size : currentFiles.length} {selectedFiles.size > 0 ? 'selected' : ''} files to Printify
           </Button>
         </div>
       </div>
