@@ -73,6 +73,15 @@ export interface PrintProvider {
   created_at: string;
 }
 
+export interface ApiToken {
+  id: string;
+  user_id: string;
+  provider: 'printify' | 'shopify';
+  token_ref: string;
+  created_at: string;
+  last_used_at: string | null;
+}
+
 export interface WizardState {
   currentStep: number;
   folderUrl: string;
