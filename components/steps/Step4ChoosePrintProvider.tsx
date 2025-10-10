@@ -43,8 +43,15 @@ export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, o
       }
 
       const data = await response.json();
-      console.log(`✅ Loaded ${data.length} print providers`);
-      setPrintProviders(data);
+      console.log('🔍 Raw API response:', data);
+      console.log('🔍 Type of data:', typeof data);
+      console.log('🔍 Is data an array?', Array.isArray(data));
+      console.log('🔍 Data keys:', Object.keys(data));
+      
+      // Handle both direct array and { printProviders: [...] } response formats
+      const providersArray = Array.isArray(data) ? data : (data.printProviders || []);
+      console.log(`✅ Loaded ${providersArray.length} print providers`);
+      setPrintProviders(providersArray);
     } catch (err) {
       console.error('❌ Failed to fetch print providers:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load print providers';
@@ -95,7 +102,13 @@ export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, o
     );
   }
 
-  const selectedProvider = printProviders.find(p => p.id === selected);
+  console.log('🔍 About to call find on printProviders:');
+  console.log('🔍 printProviders value:', printProviders);
+  console.log('🔍 printProviders type:', typeof printProviders);
+  console.log('🔍 printProviders is array:', Array.isArray(printProviders));
+  console.log('🔍 printProviders length:', printProviders?.length);
+  
+  const selectedProvider = Array.isArray(printProviders) ? printProviders.find(p => p.id === selected) : null;
 
   return (
     <Card>
