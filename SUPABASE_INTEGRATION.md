@@ -16,10 +16,17 @@
 ```sql
 user_id TEXT PRIMARY KEY
 display_name TEXT
+email TEXT
 avatar_url TEXT
 created_at TIMESTAMP DEFAULT now()
 updated_at TIMESTAMP DEFAULT now()
 ```
+
+**Test User Created:**
+- `user_id`: `'user_test'`
+- `display_name`: `'John Doe'`
+- `email`: `'john.doe@example.com'`
+- `avatar_url`: `NULL` (can be updated later)
 
 ### **2. user_settings** (User preferences)
 ```sql
