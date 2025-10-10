@@ -1,38 +1,107 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
-import { ArrowLeft, User, Mail, Key, Save, Upload } from 'lucide-react';
+import { ArrowLeft, User, Mail, Key, Save, Upload, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProfileSettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: '',
+    email: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
 
+  useEffect(() => {
+    // Fetch user profile
+    async function fetchProfile() {
+      try {
+        const response = await fetch('/api/user/profile?userId=user_test');
+        const data = await response.json();
+        
+        setFormData({
+          name: data.display_name || '',
+          email: data.email || '',
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProfile();
+  }, []);
+
   const handleSave = async () => {
     setIsSaving(true);
-    // TODO: Implement save logic
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    setIsEditing(false);
+    setSaveSuccess(false);
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 'user_test',
+          display_name: formData.name,
+          email: formData.email,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      setSaveSuccess(true);
+      setIsEditing(false);
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-16 py-12 px-4 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading settings...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const initials = formData.name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || 'U';
 
   return (
     <>
-      <Header 
-        userName={formData.name}
-        userEmail={formData.email}
-      />
+      <Header />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-16 py-12 px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -48,6 +117,14 @@ export default function ProfileSettingsPage() {
             <p className="text-gray-600">Manage your account information and preferences</p>
           </div>
 
+          {/* Success Message */}
+          {saveSuccess && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <p className="text-green-800 font-medium">Profile updated successfully!</p>
+            </div>
+          )}
+
           {/* Profile Picture Section */}
           <Card className="mb-6">
             <div className="p-6">
@@ -55,7 +132,7 @@ export default function ProfileSettingsPage() {
               <div className="flex items-center gap-6">
                 {/* Avatar */}
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl border-4 border-white shadow-lg">
-                  JD
+                  {initials}
                 </div>
                 
                 {/* Upload Button */}
