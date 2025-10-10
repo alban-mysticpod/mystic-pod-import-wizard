@@ -24,8 +24,8 @@ export async function GET() {
       .from('presets')
       .select(`
         *,
-        blueprint:blueprints!presets_blueprint_id_fkey(id, title, brand, model, images),
-        print_provider:print_providers!presets_print_provider_id_fkey(id, title, location)
+        blueprint:blueprints(id, title, brand, model, images),
+        print_provider:print_providers(id, title, location)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });

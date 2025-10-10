@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`✅ Found ${data?.length || 0} blueprints`);
-    return NextResponse.json(data || []);
+    return NextResponse.json({ blueprints: data || [] });
   } catch (error) {
     console.error('❌ Unexpected error:', error);
     return NextResponse.json(

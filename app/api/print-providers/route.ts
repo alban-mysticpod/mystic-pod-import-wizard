@@ -9,11 +9,11 @@ import { supabaseAdmin } from '@/lib/supabase';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const blueprintId = searchParams.get('blueprintId');
+    const blueprintId = searchParams.get('blueprint_id') || searchParams.get('blueprintId');
 
     if (!blueprintId) {
       return NextResponse.json(
-        { error: 'blueprintId is required' },
+        { error: 'blueprint_id is required' },
         { status: 400 }
       );
     }
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`✅ Found ${data?.length || 0} print providers`);
-    return NextResponse.json(data || []);
+    return NextResponse.json({ printProviders: data || [] });
   } catch (error) {
     console.error('❌ Unexpected error:', error);
     return NextResponse.json(
