@@ -82,6 +82,52 @@ export interface ApiToken {
   last_used_at: string | null;
 }
 
+// Print Area types
+export interface PrintArea {
+  id: string;
+  blueprint_id: number;
+  print_provider_id: number;
+  name: string;
+  width: number;
+  height: number;
+  placeholders: {
+    width: number;
+    height: number;
+    position: string;
+  };
+  created_at: string;
+}
+
+// Preset types
+export interface PlacementConfig {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+}
+
+export interface PresetPlacements {
+  [key: string]: PlacementConfig;
+}
+
+export interface Preset {
+  id: string;
+  user_id: string;
+  name: string;
+  provider: 'printify' | 'shopify';
+  blueprint_id: number;
+  print_provider_id: number;
+  visibility: 'private' | 'public';
+  created_at: string;
+  updated_at: string;
+  placements: PresetPlacements;
+}
+
+export interface PresetWithDetails extends Preset {
+  blueprint?: Blueprint;
+  print_provider?: PrintProvider;
+}
+
 export interface WizardState {
   currentStep: number;
   folderUrl: string;

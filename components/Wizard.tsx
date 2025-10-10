@@ -113,6 +113,8 @@ export function Wizard() {
           {state.currentStep === 1 && (
             <Step1DriveFolder
               folderUrl={state.folderUrl}
+              fileCount={state.fileCount}
+              sampleFiles={state.sampleFiles}
               onNext={handleStep1Next}
             />
           )}

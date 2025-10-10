@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Header } from '@/components/Header';
-import { ArrowLeft, Settings, Mail, Calendar, Package, Key, Trash2, Plus, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Settings, Mail, Calendar, Package, Key, Trash2, Plus, CheckCircle, XCircle, Layers } from 'lucide-react';
 import Link from 'next/link';
 
 interface ApiToken {
@@ -168,6 +168,41 @@ export default function ProfilePage() {
               </div>
             </div>
           </Card>
+
+          {/* Quick Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <Link href="/profile/presets">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <div className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Layers className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">My Presets</h3>
+                      <p className="text-sm text-gray-600">Manage design placement configurations</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+
+            <Link href="/profile/settings">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <div className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <Settings className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Settings</h3>
+                      <p className="text-sm text-gray-600">Update your profile information</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          </div>
 
           {/* API Tokens Section */}
           <Card className="mb-6">
