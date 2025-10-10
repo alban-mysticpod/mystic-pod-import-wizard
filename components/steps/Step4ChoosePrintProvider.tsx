@@ -6,7 +6,7 @@ import { Card } from '@/components/Card';
 import { PrintProvider, Blueprint } from '@/types';
 import { Printer, Check, MapPin, ArrowLeft } from 'lucide-react';
 
-interface Step5Props {
+interface Step4Props {
   blueprint: Blueprint;
   selectedPrintProviderId: number | null;
   onNext: (printProviderId: number) => void;
@@ -16,7 +16,7 @@ interface Step5Props {
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
-export function Step5ChoosePrintProvider({ blueprint, selectedPrintProviderId, onNext, onBack }: Step5Props) {
+export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, onNext, onBack }: Step4Props) {
   const [printProviders, setPrintProviders] = useState<PrintProvider[]>([]);
   const [selected, setSelected] = useState<number | null>(selectedPrintProviderId);
   const [isLoading, setIsLoading] = useState(true);

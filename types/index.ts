@@ -104,10 +104,9 @@ export interface WizardState {
 
 export const STEPS = [
   { id: 1, title: 'Google Drive Folder', description: 'Share your design folder' },
-  { id: 2, title: 'Printify API Token', description: 'Connect your Printify account' },
-  { id: 3, title: 'Choose Shop', description: 'Select your Printify shop' },
-  { id: 4, title: 'Choose Blueprint', description: 'Select product template' },
-  { id: 5, title: 'Choose Print Provider', description: 'Select print provider' },
-  { id: 6, title: 'Preview Designs', description: 'Review your designs' },
-  { id: 7, title: 'Import & Process', description: 'Import to Printify' },
+  { id: 2, title: 'Choose Shop', description: 'Select your Printify shop' },
+  { id: 3, title: 'Choose Blueprint', description: 'Select product template' },
+  { id: 4, title: 'Choose Print Provider', description: 'Select print provider' },
+  { id: 5, title: 'Preview Designs', description: 'Review your designs' },
+  { id: 6, title: 'Import & Process', description: 'Import to Printify' },
 ] as const;

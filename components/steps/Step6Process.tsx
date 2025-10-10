@@ -6,7 +6,7 @@ import { Card } from '@/components/Card';
 import { importToPrintify } from '@/lib/api';
 import { CheckCircle, XCircle, ExternalLink, RotateCcw, Package, ArrowLeft } from 'lucide-react';
 
-interface Step7Props {
+interface Step6Props {
   folderId: string;
   tokenRef: string;
   shopId: number;
@@ -20,7 +20,7 @@ type ImportState = 'importing' | 'success' | 'error';
 // Global map to track import state across component re-renders
 const importState = new Map<string, boolean>();
 
-export function Step7Process({ folderId, tokenRef, shopId, fileCount, onRestart, onBack }: Step7Props) {
+export function Step6Process({ folderId, tokenRef, shopId, fileCount, onRestart, onBack }: Step6Props) {
   const [currentState, setCurrentState] = useState<ImportState>('importing');
   const [error, setError] = useState('');
   const [importResult, setImportResult] = useState<any>(null);

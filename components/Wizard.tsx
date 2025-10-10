@@ -3,12 +3,11 @@
 import { useState, useCallback } from 'react';
 import { Stepper } from './Stepper';
 import { Step1DriveFolder } from './steps/Step1DriveFolder';
-import { Step2PrintifyToken } from './steps/Step2PrintifyToken';
-import { Step3ChooseShop } from './steps/Step3ChooseShop';
-import { Step4ChooseBlueprint } from './steps/Step4ChooseBlueprint';
-import { Step5ChoosePrintProvider } from './steps/Step5ChoosePrintProvider';
-import { Step6Preview } from './steps/Step6Preview';
-import { Step7Process } from './steps/Step7Process';
+import { Step2ChooseShop } from './steps/Step2ChooseShop';
+import { Step3ChooseBlueprint } from './steps/Step3ChooseBlueprint';
+import { Step4ChoosePrintProvider } from './steps/Step4ChoosePrintProvider';
+import { Step5Preview } from './steps/Step5Preview';
+import { Step6Process } from './steps/Step6Process';
 import { WizardState, PrintifyShop, DriveFile, Blueprint } from '@/types';
 
 const initialState: WizardState = {
@@ -40,20 +39,10 @@ export function Wizard() {
 
   // Generic back handler
   const handleBack = useCallback(() => {
-    setState(prev => {
-      const currentStep = prev.currentStep;
-      let previousStep = currentStep - 1;
-
-      // Skip step 3 if going back and there's only one shop
-      if (previousStep === 3 && prev.shops.length <= 1) {
-        previousStep = 2;
-      }
-
-      return {
-        ...prev,
-        currentStep: previousStep,
-      };
-    });
+    setState(prev => ({
+      ...prev,
+      currentStep: prev.currentStep - 1,
+    }));
   }, []);
 
   const handleStep1Next = useCallback((data: {
@@ -72,50 +61,39 @@ export function Wizard() {
     apiToken: string;
     tokenRef: string;
     shops: PrintifyShop[];
+    shopId: number;
   }) => {
-    const nextStep = data.shops.length > 1 ? 3 : 4;
-    const selectedShopId = data.shops.length === 1 ? data.shops[0].id : null;
-    
     updateState({
       ...data,
-      selectedShopId,
-      currentStep: nextStep,
+      selectedShopId: data.shopId,
+      currentStep: 3,
     });
   }, [updateState]);
 
-  const handleStep3Next = useCallback((shopId: number) => {
+  const handleStep3Next = useCallback((blueprint: Blueprint) => {
     updateState({
-      selectedShopId: shopId,
+      selectedBlueprint: blueprint,
       currentStep: 4,
     });
   }, [updateState]);
 
-  const handleStep4Next = useCallback((blueprint: Blueprint) => {
+  const handleStep4Next = useCallback((printProviderId: number) => {
     updateState({
-      selectedBlueprint: blueprint,
+      selectedPrintProviderId: printProviderId,
       currentStep: 5,
     });
   }, [updateState]);
 
-  const handleStep5Next = useCallback((printProviderId: number) => {
-    updateState({
-      selectedPrintProviderId: printProviderId,
-      currentStep: 6,
-    });
-  }, [updateState]);
-
-  const handleStep6Next = useCallback((files: DriveFile[]) => {
+  const handleStep5Next = useCallback((files: DriveFile[]) => {
     updateState({
       files,
-      currentStep: 7,
+      currentStep: 6,
     });
   }, [updateState]);
 
   const handleRestart = useCallback(() => {
     setState(initialState);
   }, []);
-
-  const shouldSkipStep3 = state.shops.length <= 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -129,7 +107,7 @@ export function Wizard() {
           </p>
         </div>
 
-        <Stepper currentStep={state.currentStep} skipStep3={shouldSkipStep3} />
+        <Stepper currentStep={state.currentStep} skipStep3={false} />
 
         <div className="max-w-4xl mx-auto">
           {state.currentStep === 1 && (
@@ -140,51 +118,41 @@ export function Wizard() {
           )}
 
           {state.currentStep === 2 && (
-            <Step2PrintifyToken
-              apiToken={state.apiToken}
+            <Step2ChooseShop
+              selectedShopId={state.selectedShopId}
               onNext={handleStep2Next}
               onBack={handleBack}
             />
           )}
 
           {state.currentStep === 3 && (
-            <Step3ChooseShop
-              shops={state.shops}
-              selectedShopId={state.selectedShopId}
-              tokenRef={state.tokenRef}
+            <Step3ChooseBlueprint
+              selectedBlueprint={state.selectedBlueprint}
               onNext={handleStep3Next}
               onBack={handleBack}
             />
           )}
 
-          {state.currentStep === 4 && (
-            <Step4ChooseBlueprint
-              selectedBlueprint={state.selectedBlueprint}
+          {state.currentStep === 4 && state.selectedBlueprint && (
+            <Step4ChoosePrintProvider
+              blueprint={state.selectedBlueprint}
+              selectedPrintProviderId={state.selectedPrintProviderId}
               onNext={handleStep4Next}
               onBack={handleBack}
             />
           )}
 
-          {state.currentStep === 5 && state.selectedBlueprint && (
-            <Step5ChoosePrintProvider
-              blueprint={state.selectedBlueprint}
-              selectedPrintProviderId={state.selectedPrintProviderId}
+          {state.currentStep === 5 && (
+            <Step5Preview
+              folderId={state.folderId}
+              files={state.files}
               onNext={handleStep5Next}
               onBack={handleBack}
             />
           )}
 
-          {state.currentStep === 6 && (
-            <Step6Preview
-              folderId={state.folderId}
-              files={state.files}
-              onNext={handleStep6Next}
-              onBack={handleBack}
-            />
-          )}
-
-          {state.currentStep === 7 && state.selectedShopId && (
-            <Step7Process
+          {state.currentStep === 6 && state.selectedShopId && (
+            <Step6Process
               folderId={state.folderId}
               tokenRef={state.tokenRef}
               shopId={state.selectedShopId}

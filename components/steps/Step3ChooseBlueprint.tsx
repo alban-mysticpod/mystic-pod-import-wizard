@@ -6,7 +6,7 @@ import { Card } from '@/components/Card';
 import { Blueprint } from '@/types';
 import { Package, Check, ArrowLeft } from 'lucide-react';
 
-interface Step4Props {
+interface Step3Props {
   selectedBlueprint: Blueprint | null;
   onNext: (blueprint: Blueprint) => void;
   onBack?: () => void;
@@ -15,7 +15,7 @@ interface Step4Props {
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
-export function Step4ChooseBlueprint({ selectedBlueprint, onNext, onBack }: Step4Props) {
+export function Step3ChooseBlueprint({ selectedBlueprint, onNext, onBack }: Step3Props) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [selected, setSelected] = useState<Blueprint | null>(selectedBlueprint);
   const [isLoading, setIsLoading] = useState(true);

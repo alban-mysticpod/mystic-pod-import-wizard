@@ -8,7 +8,7 @@ import { DriveFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
 import { Upload, RefreshCw, ArrowLeft } from 'lucide-react';
 
-interface Step6Props {
+interface Step5Props {
   folderId: string;
   files: DriveFile[];
   onNext: (files: DriveFile[]) => void;
@@ -18,7 +18,7 @@ interface Step6Props {
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
-export function Step6Preview({ folderId, files, onNext, onBack }: Step6Props) {
+export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<DriveFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
