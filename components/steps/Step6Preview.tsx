@@ -6,18 +6,19 @@ import { Card } from '@/components/Card';
 import { fetchImages } from '@/lib/api';
 import { DriveFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
-import { Upload, RefreshCw } from 'lucide-react';
+import { Upload, RefreshCw, ArrowLeft } from 'lucide-react';
 
 interface Step6Props {
   folderId: string;
   files: DriveFile[];
   onNext: (files: DriveFile[]) => void;
+  onBack?: () => void;
 }
 
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
-export function Step6Preview({ folderId, files, onNext }: Step6Props) {
+export function Step6Preview({ folderId, files, onNext, onBack }: Step6Props) {
   const [currentFiles, setCurrentFiles] = useState<DriveFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
@@ -182,16 +183,24 @@ export function Step6Preview({ folderId, files, onNext }: Step6Props) {
           </div>
         )}
 
-        <div className="flex justify-between">
-          <Button
-            onClick={loadFiles}
-            variant="secondary"
-            loading={isLoading}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh Files
-          </Button>
+        <div className="flex justify-between gap-4">
+          <div className="flex gap-3">
+            {onBack && (
+              <Button onClick={onBack} variant="secondary" size="lg" className="inline-flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+            )}
+            <Button
+              onClick={loadFiles}
+              variant="secondary"
+              loading={isLoading}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh Files
+            </Button>
+          </div>
           <Button
             onClick={handleNext}
             disabled={currentFiles.length === 0 || isLoading}

@@ -4,18 +4,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PrintProvider, Blueprint } from '@/types';
-import { Printer, Check, MapPin } from 'lucide-react';
+import { Printer, Check, MapPin, ArrowLeft } from 'lucide-react';
 
 interface Step5Props {
   blueprint: Blueprint;
   selectedPrintProviderId: number | null;
   onNext: (printProviderId: number) => void;
+  onBack?: () => void;
 }
 
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
-export function Step5ChoosePrintProvider({ blueprint, selectedPrintProviderId, onNext }: Step5Props) {
+export function Step5ChoosePrintProvider({ blueprint, selectedPrintProviderId, onNext, onBack }: Step5Props) {
   const [printProviders, setPrintProviders] = useState<PrintProvider[]>([]);
   const [selected, setSelected] = useState<number | null>(selectedPrintProviderId);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,16 +166,24 @@ export function Step5ChoosePrintProvider({ blueprint, selectedPrintProviderId, o
           </div>
         )}
 
-        {/* Continue Button */}
-        <Button
-          onClick={handleNext}
-          variant="primary"
-          size="lg"
-          disabled={!selected}
-          className="w-full"
-        >
-          Continue with {selectedProvider ? selectedProvider.title : 'Selected Provider'}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex justify-between gap-4">
+          {onBack && (
+            <Button onClick={onBack} variant="secondary" size="lg" className="inline-flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+          )}
+          <Button
+            onClick={handleNext}
+            variant="primary"
+            size="lg"
+            disabled={!selected}
+            className="flex-1"
+          >
+            Continue with {selectedProvider ? selectedProvider.title : 'Selected Provider'}
+          </Button>
+        </div>
       </div>
     </Card>
   );

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { importToPrintify } from '@/lib/api';
-import { CheckCircle, XCircle, ExternalLink, RotateCcw, Package } from 'lucide-react';
+import { CheckCircle, XCircle, ExternalLink, RotateCcw, Package, ArrowLeft } from 'lucide-react';
 
 interface Step7Props {
   folderId: string;
@@ -12,6 +12,7 @@ interface Step7Props {
   shopId: number;
   fileCount: number;
   onRestart: () => void;
+  onBack?: () => void;
 }
 
 type ImportState = 'importing' | 'success' | 'error';
@@ -19,7 +20,7 @@ type ImportState = 'importing' | 'success' | 'error';
 // Global map to track import state across component re-renders
 const importState = new Map<string, boolean>();
 
-export function Step7Process({ folderId, tokenRef, shopId, fileCount, onRestart }: Step7Props) {
+export function Step7Process({ folderId, tokenRef, shopId, fileCount, onRestart, onBack }: Step7Props) {
   const [currentState, setCurrentState] = useState<ImportState>('importing');
   const [error, setError] = useState('');
   const [importResult, setImportResult] = useState<any>(null);
@@ -173,20 +174,28 @@ export function Step7Process({ folderId, tokenRef, shopId, fileCount, onRestart 
           </div>
 
           <div className="space-y-4">
-            <Button
-              onClick={() => {
-                // Réinitialiser le state global pour permettre un nouveau retry
-                const importKey = `${folderId}-${tokenRef}-${shopId}`;
-                importState.set(importKey, false);
-                startImport();
-              }}
-              variant="primary"
-              size="lg"
-              className="inline-flex items-center"
-            >
-              <RotateCcw className="w-5 h-5 mr-2" />
-              Try Again
-            </Button>
+            <div className="flex justify-center gap-3">
+              {onBack && (
+                <Button onClick={onBack} variant="secondary" size="lg" className="inline-flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </Button>
+              )}
+              <Button
+                onClick={() => {
+                  // Réinitialiser le state global pour permettre un nouveau retry
+                  const importKey = `${folderId}-${tokenRef}-${shopId}`;
+                  importState.set(importKey, false);
+                  startImport();
+                }}
+                variant="primary"
+                size="lg"
+                className="inline-flex items-center"
+              >
+                <RotateCcw className="w-5 h-5 mr-2" />
+                Try Again
+              </Button>
+            </div>
             
             <div className="text-center">
               <Button

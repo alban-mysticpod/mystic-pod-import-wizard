@@ -5,7 +5,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { chooseShop } from '@/lib/api';
 import { PrintifyShop } from '@/types';
-import { Store, CheckCircle } from 'lucide-react';
+import { Store, CheckCircle, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Step3Props {
@@ -13,9 +13,10 @@ interface Step3Props {
   shops: PrintifyShop[];
   selectedShopId: number | null;
   onNext: (shopId: number) => void;
+  onBack?: () => void;
 }
 
-export function Step3ChooseShop({ tokenRef, shops, selectedShopId, onNext }: Step3Props) {
+export function Step3ChooseShop({ tokenRef, shops, selectedShopId, onNext, onBack }: Step3Props) {
   const [selected, setSelected] = useState<number | null>(selectedShopId);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -92,12 +93,19 @@ export function Step3ChooseShop({ tokenRef, shops, selectedShopId, onNext }: Ste
           ))}
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-between">
+          {onBack && (
+            <Button onClick={onBack} variant="secondary" className="inline-flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+          )}
           <Button
             onClick={handleNext}
             loading={isLoading}
             disabled={!selected}
             variant="success"
+            className="ml-auto"
           >
             Continue with Selected Shop
           </Button>

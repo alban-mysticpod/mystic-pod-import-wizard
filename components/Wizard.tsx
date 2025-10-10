@@ -38,6 +38,24 @@ export function Wizard() {
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
+  // Generic back handler
+  const handleBack = useCallback(() => {
+    setState(prev => {
+      const currentStep = prev.currentStep;
+      let previousStep = currentStep - 1;
+
+      // Skip step 3 if going back and there's only one shop
+      if (previousStep === 3 && prev.shops.length <= 1) {
+        previousStep = 2;
+      }
+
+      return {
+        ...prev,
+        currentStep: previousStep,
+      };
+    });
+  }, []);
+
   const handleStep1Next = useCallback((data: {
     folderUrl: string;
     folderId: string;
@@ -125,6 +143,7 @@ export function Wizard() {
             <Step2PrintifyToken
               apiToken={state.apiToken}
               onNext={handleStep2Next}
+              onBack={handleBack}
             />
           )}
 
@@ -134,6 +153,7 @@ export function Wizard() {
               selectedShopId={state.selectedShopId}
               tokenRef={state.tokenRef}
               onNext={handleStep3Next}
+              onBack={handleBack}
             />
           )}
 
@@ -141,6 +161,7 @@ export function Wizard() {
             <Step4ChooseBlueprint
               selectedBlueprint={state.selectedBlueprint}
               onNext={handleStep4Next}
+              onBack={handleBack}
             />
           )}
 
@@ -149,6 +170,7 @@ export function Wizard() {
               blueprint={state.selectedBlueprint}
               selectedPrintProviderId={state.selectedPrintProviderId}
               onNext={handleStep5Next}
+              onBack={handleBack}
             />
           )}
 
@@ -157,6 +179,7 @@ export function Wizard() {
               folderId={state.folderId}
               files={state.files}
               onNext={handleStep6Next}
+              onBack={handleBack}
             />
           )}
 
@@ -167,6 +190,7 @@ export function Wizard() {
               shopId={state.selectedShopId}
               fileCount={state.fileCount}
               onRestart={handleRestart}
+              onBack={handleBack}
             />
           )}
         </div>

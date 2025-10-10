@@ -6,23 +6,22 @@ import { Input } from '@/components/Input';
 import { Card } from '@/components/Card';
 import { testPrintifyToken } from '@/lib/api';
 import { PrintifyShop } from '@/types';
-import { Key, CheckCircle, ExternalLink } from 'lucide-react';
+import { Key, CheckCircle, ExternalLink, ArrowLeft } from 'lucide-react';
 
 interface Step2Props {
   apiToken: string;
-  tokenRef: string;
-  shops: PrintifyShop[];
   onNext: (data: { apiToken: string; tokenRef: string; shops: PrintifyShop[] }) => void;
+  onBack?: () => void;
 }
 
-export function Step2PrintifyToken({ apiToken, tokenRef, shops, onNext }: Step2Props) {
+export function Step2PrintifyToken({ apiToken, onNext, onBack }: Step2Props) {
   const [token, setToken] = useState(apiToken);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationResult, setValidationResult] = useState<{
     tokenRef: string;
     shops: PrintifyShop[];
-  } | null>(tokenRef ? { tokenRef, shops } : null);
+  } | null>(null);
 
   const handleValidate = async () => {
     // Validation stricte : vérifier si le champ est vide
@@ -161,19 +160,27 @@ export function Step2PrintifyToken({ apiToken, tokenRef, shops, onNext }: Step2P
           </div>
         )}
 
-        <div className="flex justify-end space-x-3">
-          <Button
-            onClick={handleValidate}
-            loading={isLoading}
-            disabled={!token.trim()}
-          >
-            {validationResult ? 'Re-validate Token' : 'Validate Token'}
-          </Button>
-          {validationResult && (
-            <Button onClick={handleNext} variant="success">
-              Continue
+        <div className="flex justify-between">
+          {onBack && (
+            <Button onClick={onBack} variant="secondary" className="inline-flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back
             </Button>
           )}
+          <div className="flex justify-end space-x-3 ml-auto">
+            <Button
+              onClick={handleValidate}
+              loading={isLoading}
+              disabled={!token.trim()}
+            >
+              {validationResult ? 'Re-validate Token' : 'Validate Token'}
+            </Button>
+            {validationResult && (
+              <Button onClick={handleNext} variant="success">
+                Continue
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </Card>

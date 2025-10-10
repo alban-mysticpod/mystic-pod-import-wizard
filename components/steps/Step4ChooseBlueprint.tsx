@@ -4,17 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Blueprint } from '@/types';
-import { Package, Check } from 'lucide-react';
+import { Package, Check, ArrowLeft } from 'lucide-react';
 
 interface Step4Props {
   selectedBlueprint: Blueprint | null;
   onNext: (blueprint: Blueprint) => void;
+  onBack?: () => void;
 }
 
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
-export function Step4ChooseBlueprint({ selectedBlueprint, onNext }: Step4Props) {
+export function Step4ChooseBlueprint({ selectedBlueprint, onNext, onBack }: Step4Props) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [selected, setSelected] = useState<Blueprint | null>(selectedBlueprint);
   const [isLoading, setIsLoading] = useState(true);
@@ -161,16 +162,24 @@ export function Step4ChooseBlueprint({ selectedBlueprint, onNext }: Step4Props) 
           </div>
         )}
 
-        {/* Continue Button */}
-        <Button
-          onClick={handleNext}
-          variant="primary"
-          size="lg"
-          disabled={!selected}
-          className="w-full"
-        >
-          Continue with {selected ? selected.title : 'Selected Blueprint'}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex justify-between gap-4">
+          {onBack && (
+            <Button onClick={onBack} variant="secondary" size="lg" className="inline-flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+          )}
+          <Button
+            onClick={handleNext}
+            variant="primary"
+            size="lg"
+            disabled={!selected}
+            className="flex-1"
+          >
+            Continue with {selected ? selected.title : 'Selected Blueprint'}
+          </Button>
+        </div>
       </div>
     </Card>
   );
