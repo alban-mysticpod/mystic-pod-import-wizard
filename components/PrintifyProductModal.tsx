@@ -40,7 +40,22 @@ export function PrintifyProductModal({
       console.log('🔄 Loading Printify products in modal...');
       const data = await listPrintifyProducts(tokenRef, importId);
       console.log('✅ Printify products loaded:', data);
-      setProducts(data.products || []);
+      console.log('🔍 Data structure:', typeof data, Object.keys(data));
+      console.log('🔍 data.products:', data.products);
+      console.log('🔍 data.products type:', typeof data.products);
+      console.log('🔍 data.products length:', data.products?.length);
+      
+      // Check if data is directly an array
+      if (Array.isArray(data)) {
+        console.log('🔍 Data is directly an array, length:', data.length);
+        setProducts(data);
+      } else if (data.products && Array.isArray(data.products)) {
+        console.log('🔍 Using data.products, length:', data.products.length);
+        setProducts(data.products);
+      } else {
+        console.log('🔍 No valid products array found');
+        setProducts([]);
+      }
     } catch (err) {
       console.error('❌ Failed to load Printify products:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load products';
