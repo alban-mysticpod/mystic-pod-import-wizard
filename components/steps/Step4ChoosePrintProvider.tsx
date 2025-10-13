@@ -78,22 +78,28 @@ export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, i
       return;
     }
 
+    // Passer immédiatement à l'étape suivante pour une meilleure UX
+    onNext(selected);
+
+    // Déclencher les webhooks en arrière-plan (sans bloquer l'UI)
     try {
-      // Appeler le webhook select-print-provider quand un print provider est sélectionné
-      console.log('🖨️ Selecting print provider:', selected, 'importId:', importId);
-      await selectPrintProvider(selected, importId);
-      console.log('✅ Print provider selected successfully');
+      // Appeler le webhook select-print-provider en arrière-plan
+      console.log('🖨️ Selecting print provider in background:', selected, 'importId:', importId);
+      selectPrintProvider(selected, importId).then(() => {
+        console.log('✅ Print provider selected successfully');
+      }).catch((err) => {
+        console.error('❌ Failed to select print provider:', err);
+      });
       
-      // Générer les mockup images après la sélection du print provider
-      console.log('🔄 Generating mockup images for import:', importId);
-      await generateMockupImages(importId);
-      console.log('✅ Mockup images generation triggered');
-      
-      onNext(selected);
+      // Générer les mockup images en arrière-plan
+      console.log('🔄 Generating mockup images in background for import:', importId);
+      generateMockupImages(importId).then(() => {
+        console.log('✅ Mockup images generation triggered');
+      }).catch((err) => {
+        console.error('❌ Failed to generate mockup images:', err);
+      });
     } catch (err) {
-      console.error('❌ Failed to select print provider or generate mockups:', err);
-      // Continuer même si les webhooks échouent
-      onNext(selected);
+      console.error('❌ Error setting up background tasks:', err);
     }
   };
 
