@@ -247,31 +247,23 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
                 <h2 className="text-lg font-semibold text-gray-900">Import from Printify</h2>
               </div>
               <p className="text-sm text-gray-600 mb-4">
-                Import settings from an existing Printify product on your account
+                Select a Printify product
               </p>
               
               {/* Import Button */}
-              <div className="p-6 border-2 border-dashed border-green-300 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <ExternalLink className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Browse Your Printify Products</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Select from your existing products to automatically configure blueprint, print provider, and design settings
-                  </p>
-                  <Button
-                    onClick={() => {
-                      // TODO: Navigate to Printify products selection page
-                      console.log('Navigate to Printify products page');
-                    }}
-                    variant="secondary"
-                    className="bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Browse Products
-                  </Button>
-                </div>
+              <div className="text-center">
+                <Button
+                  onClick={() => {
+                    // TODO: Navigate to Printify products selection page
+                    console.log('Navigate to Printify products page');
+                  }}
+                  variant="secondary"
+                  className="bg-white hover:bg-green-50 text-transparent hover:text-green-700 border-2 border-green-300 hover:border-green-500 transition-all duration-200 px-8 py-3"
+                >
+                  <span className="hover:opacity-100 opacity-0 transition-opacity duration-200">
+                    Select a Printify product
+                  </span>
+                </Button>
               </div>
             </div>
 
