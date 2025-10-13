@@ -120,17 +120,17 @@ export async function importToPrintify(
   return response.json();
 }
 
-export async function createPreset(blueprintId: number, importId: string): Promise<{ ok: true }> {
+export async function assignPreset(blueprintId: number, importId: string): Promise<{ ok: true }> {
   const userId = getUserId(); // Utiliser l'ID utilisateur existant
   
-  const response = await fetch('/api/create-preset', {
+  const response = await fetch('/api/assign-preset', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ blueprintId, userId, importId }),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to create preset: ${response.statusText}`);
+    throw new Error(`Failed to assign preset: ${response.statusText}`);
   }
 
   return response.json();

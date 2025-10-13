@@ -5,7 +5,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PrintifyProductModal } from '@/components/PrintifyProductModal';
 import { Blueprint, Preset, PrintifyProduct } from '@/types';
-import { createPreset } from '@/lib/api';
+import { assignPreset } from '@/lib/api';
 import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink } from 'lucide-react';
 
 interface Step3Props {
@@ -118,15 +118,15 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
     }
 
     try {
-      // Appeler le webhook create-preset quand un blueprint est sélectionné
-      console.log('🎯 Creating preset for blueprint:', selected.id, 'importId:', importId);
-      await createPreset(selected.id, importId);
-      console.log('✅ Preset created successfully');
+      // Appeler le webhook assign-preset quand un blueprint est sélectionné
+      console.log('🎯 Assigning preset for blueprint:', selected.id, 'importId:', importId);
+      await assignPreset(selected.id, importId);
+      console.log('✅ Preset assigned successfully');
       
       onNext(selected);
     } catch (err) {
-      console.error('❌ Failed to create preset:', err);
-      // Continuer même si la création du preset échoue
+      console.error('❌ Failed to assign preset:', err);
+      // Continuer même si l'assignation du preset échoue
       onNext(selected);
     }
   };

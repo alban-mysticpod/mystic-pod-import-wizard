@@ -12,10 +12,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/create-preset';
+    const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/assign-preset';
     const payload = { blueprintId, userId, importId };
     
-    console.log('🎯 Creating preset via n8n webhook:');
+    console.log('🎯 Assigning preset via n8n webhook:');
     console.log('- URL:', webhookUrl);
     console.log('- Payload:', payload);
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json(
         { 
-          error: `Create preset webhook failed: ${n8nResponse.statusText}`,
+          error: `Assign preset webhook failed: ${n8nResponse.statusText}`,
           details: errorText,
           webhookUrl 
         },
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await n8nResponse.json();
-    console.log('✅ Preset created successfully via n8n:', data);
+    console.log('✅ Preset assigned successfully via n8n:', data);
 
     return NextResponse.json(data);
   } catch (error) {
