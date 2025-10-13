@@ -6,6 +6,7 @@ import {
   ImportStartResponse,
   ImportToPrintifyResponse,
   ImportStatusEvent,
+  ListPrintifyProductsResponse,
 } from '@/types';
 import { getUserId } from '@/lib/user';
 
@@ -146,6 +147,21 @@ export async function selectPrintProvider(printProviderId: number, importId: str
 
   if (!response.ok) {
     throw new Error(`Failed to select print provider: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function listPrintifyProducts(tokenRef: string, importId: string): Promise<ListPrintifyProductsResponse> {
+  const userId = getUserId();
+  const response = await fetch('/api/list-printify-products', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tokenRef, userId, importId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to list Printify products: ${response.statusText}`);
   }
 
   return response.json();

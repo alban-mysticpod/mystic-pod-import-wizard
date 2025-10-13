@@ -148,6 +148,55 @@ export interface PresetWithDetails extends Preset {
   print_provider?: PrintProvider;
 }
 
+export interface PrintifyProduct {
+  id: string;
+  title: string;
+  description: string;
+  blueprint_id: number;
+  print_provider_id: number;
+  variants: Array<{
+    id: number;
+    price: number;
+    is_enabled: boolean;
+  }>;
+  print_areas: Array<{
+    variant_ids: number[];
+    placeholders: Array<{
+      position: string;
+      height: number;
+      width: number;
+    }>;
+  }>;
+  images: Array<{
+    src: string;
+    variant_ids: number[];
+    position: string;
+    is_default: boolean;
+  }>;
+  created_at: string;
+  updated_at: string;
+  visible: boolean;
+  is_locked: boolean;
+  blueprint?: {
+    id: number;
+    title: string;
+    brand: string;
+    model: string;
+    images: Array<{
+      src: string;
+      variant_ids: number[];
+      position: string;
+    }>;
+  };
+}
+
+export interface ListPrintifyProductsResponse {
+  products: PrintifyProduct[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
 export interface WizardState {
   currentStep: number;
   folderUrl: string;
@@ -162,6 +211,7 @@ export interface WizardState {
   selectedBlueprint: Blueprint | null;
   selectedPrintProviderId: number | null;
   selectedPreset: Preset | null; // Preset sélectionné pour skip les étapes
+  selectedPrintifyProduct: PrintifyProduct | null; // Produit Printify sélectionné pour import
   files: SupabaseFile[];
   session: string;
   importProgress: number;

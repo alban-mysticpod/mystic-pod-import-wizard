@@ -3,28 +3,33 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { Blueprint, Preset } from '@/types';
-import { createPreset } from '@/lib/api';
-import { Package, Check, ArrowLeft, Heart, Zap } from 'lucide-react';
+import { Blueprint, Preset, PrintifyProduct } from '@/types';
+import { createPreset, listPrintifyProducts } from '@/lib/api';
+import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink } from 'lucide-react';
 
 interface Step3Props {
   selectedBlueprint: Blueprint | null;
   importId: string; // Ajouter importId pour le webhook
+  tokenRef: string; // Ajouter tokenRef pour lister les produits Printify
   onNext: (blueprint: Blueprint) => void;
-  onPresetNext?: (preset: Preset) => void; // Nouveau handler pour les presets
+  onPresetNext?: (preset: Preset) => void; // Handler pour les presets
+  onPrintifyProductNext?: (product: PrintifyProduct) => void; // Nouveau handler pour les produits Printify
   onBack?: () => void;
 }
 
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
-export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPresetNext, onBack }: Step3Props) {
+export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, onNext, onPresetNext, onPrintifyProductNext, onBack }: Step3Props) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
+  const [printifyProducts, setPrintifyProducts] = useState<PrintifyProduct[]>([]);
   const [selected, setSelected] = useState<Blueprint | null>(selectedBlueprint);
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
+  const [selectedPrintifyProduct, setSelectedPrintifyProduct] = useState<PrintifyProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPresets, setIsLoadingPresets] = useState(true);
+  const [isLoadingPrintifyProducts, setIsLoadingPrintifyProducts] = useState(true);
   const [error, setError] = useState('');
 
   const loadBlueprints = useCallback(async () => {
@@ -86,19 +91,50 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPr
     }
   }, []);
 
+  const loadPrintifyProducts = useCallback(async () => {
+    if (!tokenRef) {
+      setIsLoadingPrintifyProducts(false);
+      return;
+    }
+
+    setIsLoadingPrintifyProducts(true);
+
+    try {
+      console.log('🔄 Loading Printify products...');
+      const data = await listPrintifyProducts(tokenRef, importId);
+      console.log('✅ Printify products loaded:', data);
+      setPrintifyProducts(data.products || []);
+    } catch (err) {
+      console.error('❌ Failed to load Printify products:', err);
+      // Ne pas afficher d'erreur pour les produits Printify, juste ne pas les afficher
+      setPrintifyProducts([]);
+    } finally {
+      setIsLoadingPrintifyProducts(false);
+    }
+  }, [tokenRef, importId]);
+
   useEffect(() => {
     loadBlueprints();
     loadPresets();
-  }, [loadBlueprints, loadPresets]);
+    loadPrintifyProducts();
+  }, [loadBlueprints, loadPresets, loadPrintifyProducts]);
 
   const handleSelect = (blueprint: Blueprint) => {
     setSelected(blueprint);
     setSelectedPreset(null); // Désélectionner le preset si on sélectionne un blueprint
+    setSelectedPrintifyProduct(null); // Désélectionner le produit Printify si on sélectionne un blueprint
   };
 
   const handlePresetSelect = (preset: Preset) => {
     setSelectedPreset(preset);
     setSelected(null); // Désélectionner le blueprint si on sélectionne un preset
+    setSelectedPrintifyProduct(null); // Désélectionner le produit Printify si on sélectionne un preset
+  };
+
+  const handlePrintifyProductSelect = (product: PrintifyProduct) => {
+    setSelectedPrintifyProduct(product);
+    setSelected(null); // Désélectionner le blueprint si on sélectionne un produit Printify
+    setSelectedPreset(null); // Désélectionner le preset si on sélectionne un produit Printify
   };
 
   const handleNext = async () => {
@@ -106,9 +142,14 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPr
       onPresetNext(selectedPreset);
       return;
     }
-    
+
+    if (selectedPrintifyProduct && onPrintifyProductNext) {
+      onPrintifyProductNext(selectedPrintifyProduct);
+      return;
+    }
+
     if (!selected) {
-      setError('Please select a blueprint or preset');
+      setError('Please select a blueprint, preset, or Printify product');
       return;
     }
 
@@ -150,11 +191,27 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPr
     );
   }
 
+  // Déterminer quelles sections afficher
+  const hasPresets = !isLoadingPresets && presets.length > 0;
+  const hasPrintifyProducts = !isLoadingPrintifyProducts && printifyProducts.length > 0;
+  const showDividers = (hasPresets && hasPrintifyProducts) || (hasPresets || hasPrintifyProducts);
+
   return (
     <Card>
       <div className="p-8">
+        {/* Dynamic Title and Description */}
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          {hasPresets || hasPrintifyProducts ? 'Select Configuration' : 'Choose a Blueprint'}
+        </h2>
+        <p className="text-gray-600 mb-6">
+          {hasPresets || hasPrintifyProducts 
+            ? 'Choose from your saved presets, import from Printify, or configure manually'
+            : 'Select the product template you want to use for your designs'
+          }
+        </p>
+
         {/* Presets Section - Only show if user has favorite presets */}
-        {!isLoadingPresets && presets.length > 0 && (
+        {hasPresets && (
           <>
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-4">
@@ -208,15 +265,86 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPr
               </div>
             </div>
 
-            {/* OR Divider */}
-            <div className="relative mb-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+            {/* OR Divider - Only show if there are more sections below */}
+            {(hasPrintifyProducts || blueprints.length > 0) && (
+              <div className="relative mb-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
+                </div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
+            )}
+          </>
+        )}
+
+        {/* Import from Printify Section - Only show if user has Printify products */}
+        {hasPrintifyProducts && (
+          <>
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Download className="w-5 h-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Import from Printify</h2>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Select an existing product from your Printify account to import its configuration
+              </p>
+              
+              {/* Printify Products Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {printifyProducts.map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => handlePrintifyProductSelect(product)}
+                    className={`relative p-4 border-2 rounded-lg transition-all hover:shadow-md text-left ${
+                      selectedPrintifyProduct?.id === product.id
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {/* Selected Checkmark */}
+                    {selectedPrintifyProduct?.id === product.id && (
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <ExternalLink className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 truncate">{product.title}</h4>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {product.description || `Blueprint ${product.blueprint_id} • Provider ${product.print_provider_id}`}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            {product.visible ? 'Published' : 'Draft'}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {product.variants?.length || 0} variants
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
+
+            {/* OR Divider - Only show if there are blueprints below */}
+            {blueprints.length > 0 && (
+              <div className="relative mb-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -291,6 +419,19 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPr
           </div>
         )}
 
+        {selectedPrintifyProduct && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Download className="w-4 h-4 text-green-600" />
+              <h3 className="font-semibold text-gray-900">Selected Printify Product: {selectedPrintifyProduct.title}</h3>
+            </div>
+            <p className="text-sm text-gray-600">
+              This product configuration will be imported and converted into a preset.
+              You'll skip directly to the preview step with the imported settings.
+            </p>
+          </div>
+        )}
+
         {selected && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h3 className="font-semibold text-gray-900 mb-2">Selected Blueprint: {selected.title}</h3>
@@ -319,14 +460,16 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPr
             onClick={handleNext}
             variant="primary"
             size="lg"
-            disabled={!selected && !selectedPreset}
+            disabled={!selected && !selectedPreset && !selectedPrintifyProduct}
             className="flex-1"
           >
             {selectedPreset 
               ? `Continue with Preset: ${selectedPreset.name}` 
-              : selected 
-                ? `Continue with ${selected.title}`
-                : 'Continue with Selection'
+              : selectedPrintifyProduct
+                ? `Import Product: ${selectedPrintifyProduct.title}`
+                : selected 
+                  ? `Continue with ${selected.title}`
+                  : 'Continue with Selection'
             }
           </Button>
         </div>
