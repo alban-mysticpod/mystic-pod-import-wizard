@@ -87,10 +87,8 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       setHasConnectedAccount(true);
       setShowTokenInput(false);
       
-      // Si un seul shop, le sélectionner automatiquement
-      if (result.shops.length === 1) {
-        setSelectedShop(result.shops[0].id);
-      }
+      // Ne plus sélectionner automatiquement même s'il n'y a qu'un seul shop
+      // L'utilisateur doit toujours faire le choix explicitement
     } catch (err) {
       console.error('❌ Failed to validate token:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to validate token';

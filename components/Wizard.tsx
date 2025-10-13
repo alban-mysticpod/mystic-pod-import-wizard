@@ -8,7 +8,7 @@ import { Step3ChooseBlueprint } from './steps/Step3ChooseBlueprint';
 import { Step4ChoosePrintProvider } from './steps/Step4ChoosePrintProvider';
 import { Step5Preview } from './steps/Step5Preview';
 import { Step6Process } from './steps/Step6Process';
-import { WizardState, PrintifyShop, SupabaseFile, Blueprint } from '@/types';
+import { WizardState, PrintifyShop, SupabaseFile, Blueprint, Preset } from '@/types';
 
 const initialState: WizardState = {
   currentStep: 1,
@@ -23,6 +23,7 @@ const initialState: WizardState = {
   selectedShopId: null,
   selectedBlueprint: null,
   selectedPrintProviderId: null,
+  selectedPreset: null,
   files: [],
   session: '',
   importProgress: 0,
@@ -76,6 +77,27 @@ export function Wizard() {
     updateState({
       selectedBlueprint: blueprint,
       currentStep: 4,
+    });
+  }, [updateState]);
+
+  const handleStep3PresetNext = useCallback((preset: Preset) => {
+    // Quand un preset est sélectionné, on skip les étapes 4 et va directement au step 5
+    // On configure automatiquement le blueprint et print provider depuis le preset
+    updateState({
+      selectedBlueprint: { 
+        id: preset.blueprint_id, 
+        title: `Blueprint ${preset.blueprint_id}`,
+        brand: 'Preset',
+        model: preset.name,
+        description: `Configured from preset: ${preset.name}`,
+        images: [],
+        provider: preset.provider,
+        created_at: preset.created_at
+      } as Blueprint,
+      selectedPrintProviderId: preset.print_provider_id,
+      // Stocker le preset sélectionné pour l'utiliser plus tard
+      selectedPreset: preset,
+      currentStep: 5, // Skip step 4 (print provider selection)
     });
   }, [updateState]);
 
@@ -133,7 +155,9 @@ export function Wizard() {
           {state.currentStep === 3 && (
             <Step3ChooseBlueprint
               selectedBlueprint={state.selectedBlueprint}
+              importId={state.importId}
               onNext={handleStep3Next}
+              onPresetNext={handleStep3PresetNext}
               onBack={handleBack}
             />
           )}
@@ -142,6 +166,7 @@ export function Wizard() {
             <Step4ChoosePrintProvider
               blueprint={state.selectedBlueprint}
               selectedPrintProviderId={state.selectedPrintProviderId}
+              importId={state.importId}
               onNext={handleStep4Next}
               onBack={handleBack}
             />

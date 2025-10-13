@@ -160,6 +160,7 @@ export interface WizardState {
   selectedShopId: number | null;
   selectedBlueprint: Blueprint | null;
   selectedPrintProviderId: number | null;
+  selectedPreset: Preset | null; // Preset sélectionné pour skip les étapes
   files: SupabaseFile[];
   session: string;
   importProgress: number;

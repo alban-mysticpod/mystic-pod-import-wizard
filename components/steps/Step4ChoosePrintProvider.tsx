@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PrintProvider, Blueprint } from '@/types';
+import { selectPrintProvider } from '@/lib/api';
 import { Printer, Check, MapPin, ArrowLeft } from 'lucide-react';
 
 interface Step4Props {
   blueprint: Blueprint;
   selectedPrintProviderId: number | null;
+  importId: string; // Ajouter importId pour le webhook
   onNext: (printProviderId: number) => void;
   onBack?: () => void;
 }
@@ -16,7 +18,7 @@ interface Step4Props {
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
-export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, onNext, onBack }: Step4Props) {
+export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, importId, onNext, onBack }: Step4Props) {
   const [printProviders, setPrintProviders] = useState<PrintProvider[]>([]);
   const [selected, setSelected] = useState<number | null>(selectedPrintProviderId);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,12 +72,24 @@ export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, o
     setSelected(providerId);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!selected) {
       setError('Please select a print provider');
       return;
     }
-    onNext(selected);
+
+    try {
+      // Appeler le webhook select-print-provider quand un print provider est sélectionné
+      console.log('🖨️ Selecting print provider:', selected, 'importId:', importId);
+      await selectPrintProvider(selected, importId);
+      console.log('✅ Print provider selected successfully');
+      
+      onNext(selected);
+    } catch (err) {
+      console.error('❌ Failed to select print provider:', err);
+      // Continuer même si le webhook échoue
+      onNext(selected);
+    }
   };
 
   if (isLoading) {
