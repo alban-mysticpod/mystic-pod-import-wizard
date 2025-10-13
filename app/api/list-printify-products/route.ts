@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { tokenRef, importId } = body;
+    const { tokenRef, importId, page = 1 } = body;
 
     if (!tokenRef) {
       return NextResponse.json({ error: 'tokenRef is required' }, { status: 400 });
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/list-printify-products';
-    const payload = { tokenRef, userId, importId };
+    const payload = { tokenRef, userId, importId, page };
 
     console.log('🚀 Calling n8n webhook for list-printify-products:');
     console.log('- URL:', webhookUrl);

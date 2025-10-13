@@ -192,9 +192,10 @@ export interface PrintifyProduct {
 
 export interface ListPrintifyProductsResponse {
   products: PrintifyProduct[];
+  total_number_of_products: number;
   current_page: number;
+  next_page: number | null;
   last_page: number;
-  total: number;
 }
 
 export interface WizardState {

@@ -23,8 +23,15 @@ export function PrintifyProductModal({
 }: PrintifyProductModalProps) {
   const [products, setProducts] = useState<PrintifyProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<PrintifyProduct | null>(null);
+  const [paginationInfo, setPaginationInfo] = useState<{
+    totalProducts: number;
+    currentPage: number;
+    nextPage: number | null;
+    lastPage: number;
+  } | null>(null);
 
   useEffect(() => {
     if (isOpen && tokenRef && importId) {
@@ -32,29 +39,43 @@ export function PrintifyProductModal({
     }
   }, [isOpen, tokenRef, importId]);
 
-  const loadProducts = async () => {
-    setIsLoading(true);
+  const loadProducts = async (page: number = 1, append: boolean = false) => {
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+      setProducts([]); // Reset products for first page
+      setPaginationInfo(null);
+    }
     setError('');
 
     try {
-      console.log('🔄 Loading Printify products in modal...');
-      const data = await listPrintifyProducts(tokenRef, importId);
+      console.log(`🔄 Loading Printify products page ${page}...`);
+      const data = await listPrintifyProducts(tokenRef, importId, page);
       console.log('✅ Printify products loaded:', data);
-      console.log('🔍 Data structure:', typeof data, Object.keys(data));
-      console.log('🔍 data.products:', data.products);
-      console.log('🔍 data.products type:', typeof data.products);
-      console.log('🔍 data.products length:', data.products?.length);
       
-      // Check if data is directly an array
-      if (Array.isArray(data)) {
-        console.log('🔍 Data is directly an array, length:', data.length);
-        setProducts(data);
-      } else if (data.products && Array.isArray(data.products)) {
+      if (data.products && Array.isArray(data.products)) {
         console.log('🔍 Using data.products, length:', data.products.length);
-        setProducts(data.products);
+        
+        // Update products (append or replace)
+        if (append) {
+          setProducts(prev => [...prev, ...data.products]);
+        } else {
+          setProducts(data.products);
+        }
+        
+        // Update pagination info
+        setPaginationInfo({
+          totalProducts: data.total_number_of_products || 0,
+          currentPage: data.current_page || page,
+          nextPage: data.next_page || null,
+          lastPage: data.last_page || 1
+        });
       } else {
         console.log('🔍 No valid products array found');
-        setProducts([]);
+        if (!append) {
+          setProducts([]);
+        }
       }
     } catch (err) {
       console.error('❌ Failed to load Printify products:', err);
@@ -62,6 +83,7 @@ export function PrintifyProductModal({
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -73,6 +95,12 @@ export function PrintifyProductModal({
     if (selectedProduct) {
       onSelectProduct(selectedProduct);
       onClose();
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (paginationInfo?.nextPage) {
+      loadProducts(paginationInfo.nextPage, true);
     }
   };
 
@@ -256,6 +284,43 @@ export function PrintifyProductModal({
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Info and Load More Button */}
+            {!isLoading && !error && products.length > 0 && (
+              <div className="mt-6 flex flex-col items-center gap-4">
+                <div className="text-sm text-gray-600 text-center">
+                  Showing {products.length} of {paginationInfo?.totalProducts || products.length} products
+                  {paginationInfo && paginationInfo.totalProducts > products.length && (
+                    <span className="ml-2 text-blue-600">
+                      (Page {paginationInfo.currentPage} of {paginationInfo.lastPage})
+                    </span>
+                  )}
+                </div>
+                
+                {paginationInfo?.nextPage && (
+                  <Button
+                    onClick={handleLoadMore}
+                    variant="secondary"
+                    disabled={isLoadingMore}
+                    className="flex items-center gap-2"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Load More Products
+                        <span className="text-xs text-gray-500">
+                          ({paginationInfo.totalProducts - products.length} remaining)
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
           )}
         </div>
 
