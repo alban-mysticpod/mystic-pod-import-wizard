@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { Blueprint, Preset } from '@/types';
+import { PrintifyProductModal } from '@/components/PrintifyProductModal';
+import { Blueprint, Preset, PrintifyProduct } from '@/types';
 import { createPreset } from '@/lib/api';
 import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink } from 'lucide-react';
 
@@ -14,14 +14,14 @@ interface Step3Props {
   tokenRef: string; // Ajouter tokenRef pour déterminer si on affiche la section Printify
   onNext: (blueprint: Blueprint) => void;
   onPresetNext?: (preset: Preset) => void; // Handler pour les presets
+  onPrintifyProductNext?: (product: PrintifyProduct) => void; // Handler pour les produits Printify
   onBack?: () => void;
 }
 
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
-export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, onNext, onPresetNext, onBack }: Step3Props) {
-  const router = useRouter();
+export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, onNext, onPresetNext, onPrintifyProductNext, onBack }: Step3Props) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [selected, setSelected] = useState<Blueprint | null>(selectedBlueprint);
@@ -29,6 +29,7 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPresets, setIsLoadingPresets] = useState(true);
   const [error, setError] = useState('');
+  const [showPrintifyModal, setShowPrintifyModal] = useState(false);
 
   const loadBlueprints = useCallback(async () => {
     const loadKey = 'blueprints-printify';
@@ -260,12 +261,8 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
               <div className="text-center">
                 <Button
                   onClick={() => {
-                    // Navigate to Printify products selection page with required parameters
-                    const params = new URLSearchParams({
-                      tokenRef: tokenRef,
-                      importId: importId
-                    });
-                    router.push(`/import-printify?${params.toString()}`);
+                    console.log('🔍 Opening Printify modal - tokenRef:', tokenRef, 'importId:', importId);
+                    setShowPrintifyModal(true);
                   }}
                   variant="secondary"
                   className="bg-white hover:bg-green-50 text-gray-600 hover:text-green-700 border-2 border-green-300 hover:border-green-500 transition-all duration-200 px-8 py-3"
@@ -401,6 +398,20 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
           </Button>
         </div>
       </div>
+
+      {/* Printify Product Selection Modal */}
+      <PrintifyProductModal
+        isOpen={showPrintifyModal}
+        onClose={() => setShowPrintifyModal(false)}
+        onSelectProduct={(product) => {
+          console.log('🎯 Product selected:', product);
+          if (onPrintifyProductNext) {
+            onPrintifyProductNext(product);
+          }
+        }}
+        tokenRef={tokenRef}
+        importId={importId}
+      />
     </Card>
   );
 }
