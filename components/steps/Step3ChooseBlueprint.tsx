@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Blueprint, Preset } from '@/types';
@@ -20,6 +21,7 @@ interface Step3Props {
 const loadingState = new Map<string, boolean>();
 
 export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, onNext, onPresetNext, onBack }: Step3Props) {
+  const router = useRouter();
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [selected, setSelected] = useState<Blueprint | null>(selectedBlueprint);
@@ -258,8 +260,12 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
               <div className="text-center">
                 <Button
                   onClick={() => {
-                    // TODO: Navigate to Printify products selection page
-                    console.log('Navigate to Printify products page');
+                    // Navigate to Printify products selection page with required parameters
+                    const params = new URLSearchParams({
+                      tokenRef: tokenRef,
+                      importId: importId
+                    });
+                    router.push(`/import-printify?${params.toString()}`);
                   }}
                   variant="secondary"
                   className="bg-white hover:bg-green-50 text-gray-600 hover:text-green-700 border-2 border-green-300 hover:border-green-500 transition-all duration-200 px-8 py-3"
