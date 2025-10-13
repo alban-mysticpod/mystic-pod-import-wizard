@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PrintProvider, Blueprint } from '@/types';
-import { selectPrintProvider } from '@/lib/api';
+import { selectPrintProvider, generateMockupImages } from '@/lib/api';
 import { Printer, Check, MapPin, ArrowLeft } from 'lucide-react';
 
 interface Step4Props {
@@ -84,10 +84,15 @@ export function Step4ChoosePrintProvider({ blueprint, selectedPrintProviderId, i
       await selectPrintProvider(selected, importId);
       console.log('✅ Print provider selected successfully');
       
+      // Générer les mockup images après la sélection du print provider
+      console.log('🔄 Generating mockup images for import:', importId);
+      await generateMockupImages(importId);
+      console.log('✅ Mockup images generation triggered');
+      
       onNext(selected);
     } catch (err) {
-      console.error('❌ Failed to select print provider:', err);
-      // Continuer même si le webhook échoue
+      console.error('❌ Failed to select print provider or generate mockups:', err);
+      // Continuer même si les webhooks échouent
       onNext(selected);
     }
   };
