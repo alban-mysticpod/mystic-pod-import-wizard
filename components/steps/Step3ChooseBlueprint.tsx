@@ -258,11 +258,9 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
                     console.log('Navigate to Printify products page');
                   }}
                   variant="secondary"
-                  className="bg-white hover:bg-green-50 text-transparent hover:text-green-700 border-2 border-green-300 hover:border-green-500 transition-all duration-200 px-8 py-3"
+                  className="bg-white hover:bg-green-50 text-gray-600 hover:text-green-700 border-2 border-green-300 hover:border-green-500 transition-all duration-200 px-8 py-3"
                 >
-                  <span className="hover:opacity-100 opacity-0 transition-opacity duration-200">
-                    Select a Printify product
-                  </span>
+                  Select a Printify product
                 </Button>
               </div>
             </div>
