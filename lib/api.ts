@@ -182,6 +182,21 @@ export async function createPresetFromPrintifyProduct(productId: string, importI
   return response.json();
 }
 
+export async function generateMockupImages(importId: string): Promise<{ ok: true }> {
+  const userId = getUserId();
+  const response = await fetch('/api/generate-mockup-images', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, importId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to generate mockup images: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export async function startImport(
   tokenRef: string,
   folderId: string,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
-import { listPrintifyProducts, createPresetFromPrintifyProduct } from '@/lib/api';
+import { listPrintifyProducts, createPresetFromPrintifyProduct, generateMockupImages } from '@/lib/api';
 import { PrintifyProduct } from '@/types';
 import { X, Calendar, Package, Printer, Eye, EyeOff, Lock } from 'lucide-react';
 
@@ -102,6 +102,11 @@ export function PrintifyProductModal({
       console.log('🔄 Creating preset from Printify product:', selectedProduct.id);
       const result = await createPresetFromPrintifyProduct(selectedProduct.id, importId);
       console.log('✅ Preset created from Printify product:', result);
+      
+      // Generate mockup images after creating the preset
+      console.log('🔄 Generating mockup images for import:', importId);
+      await generateMockupImages(importId);
+      console.log('✅ Mockup images generation triggered');
       
       // Call the original onSelectProduct callback with the product
       onSelectProduct(selectedProduct);
