@@ -230,7 +230,7 @@ export function Wizard() {
               tokenRef={state.tokenRef}
               shopId={state.selectedShopId}
               importId={state.importId}
-              fileCount={state.fileCount}
+              fileCount={state.files.length}
               onRestart={handleRestart}
               onBack={handleBack}
             />
