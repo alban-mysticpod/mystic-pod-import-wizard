@@ -163,9 +163,13 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
           {hasPresets || tokenRef ? 'Select Configuration' : 'Choose a Blueprint'}
         </h2>
         <p className="text-gray-600 mb-6">
-          {hasPresets || tokenRef 
+          {hasPresets && tokenRef 
             ? 'Choose from your saved presets, import from Printify, or configure manually'
-            : 'Select the product template you want to use for your designs'
+            : hasPresets 
+              ? 'Use your saved presets or configure manually'
+              : tokenRef 
+                ? 'Import from Printify or configure manually'
+                : 'Select the product template you want to use for your designs'
           }
         </p>
 
@@ -247,7 +251,7 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
                 <h2 className="text-lg font-semibold text-gray-900">Import from Printify</h2>
               </div>
               <p className="text-sm text-gray-600 mb-4">
-                Select a Printify product
+                Copy settings from an existing product to skip manual configuration
               </p>
               
               {/* Import Button */}
