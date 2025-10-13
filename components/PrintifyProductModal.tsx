@@ -179,15 +179,23 @@ export function PrintifyProductModal({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full table-fixed">
+                <colgroup>
+                  <col className="w-2/5" /> {/* Product - 40% */}
+                  <col className="w-16" />   {/* Blueprint - 64px */}
+                  <col className="w-16" />   {/* Provider - 64px */}
+                  <col className="w-24" />   {/* Status - 96px */}
+                  <col className="w-20" />   {/* Created - 80px */}
+                  <col className="w-20" />   {/* Action - 80px */}
+                </colgroup>
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Product</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Blueprint</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Provider</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Created</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-900">Action</th>
+                    <th className="text-left py-3 px-3 font-semibold text-gray-900">Product</th>
+                    <th className="text-left py-3 px-2 font-semibold text-gray-900">Blueprint</th>
+                    <th className="text-left py-3 px-2 font-semibold text-gray-900">Provider</th>
+                    <th className="text-left py-3 px-2 font-semibold text-gray-900">Status</th>
+                    <th className="text-left py-3 px-2 font-semibold text-gray-900">Created</th>
+                    <th className="text-left py-3 px-2 font-semibold text-gray-900">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -203,9 +211,9 @@ export function PrintifyProductModal({
                         }`}
                       >
                         {/* Product Info with Image */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                               {defaultImage ? (
                                 <img
                                   src={defaultImage}
@@ -218,86 +226,75 @@ export function PrintifyProductModal({
                                 />
                               ) : null}
                               <div className={`w-full h-full flex items-center justify-center ${defaultImage ? 'hidden' : ''}`}>
-                                <Package className="w-6 h-6 text-gray-400" />
+                                <Package className="w-5 h-5 text-gray-400" />
                               </div>
                             </div>
                             <div className="min-w-0 flex-1">
-                              <h3 className="font-semibold text-gray-900 truncate" title={product.title}>
+                              <h3 className="font-semibold text-gray-900 text-sm truncate" title={product.title}>
                                 {product.title}
                               </h3>
                               {product.description && (
-                                <p className="text-sm text-gray-600 truncate mt-1" title={product.description}>
-                                  {product.description}
+                                <p className="text-xs text-gray-500 truncate mt-1" title={product.description.replace(/<[^>]*>/g, '')}>
+                                  {product.description.replace(/<[^>]*>/g, '').substring(0, 60)}...
                                 </p>
                               )}
-                              <p className="text-xs text-gray-500 mt-1">
-                                ID: {product.id}
+                              <p className="text-xs text-gray-400 mt-1 truncate">
+                                ID: {product.id.substring(0, 8)}...
                               </p>
                             </div>
                           </div>
                         </td>
 
                         {/* Blueprint */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
-                            <Package className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.blueprint_id}
-                            </span>
-                          </div>
+                        <td className="py-3 px-2 text-center">
+                          <span className="text-xs font-medium text-gray-900" title={`Blueprint ID: ${product.blueprint_id}`}>
+                            {product.blueprint_id}
+                          </span>
                         </td>
 
                         {/* Print Provider */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
-                            <Printer className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-900">
-                              {product.print_provider_id}
-                            </span>
-                          </div>
+                        <td className="py-3 px-2 text-center">
+                          <span className="text-xs font-medium text-gray-900" title={`Provider ID: ${product.print_provider_id}`}>
+                            {product.print_provider_id}
+                          </span>
                         </td>
 
                         {/* Status */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
+                        <td className="py-3 px-2">
+                          <div className="flex items-center justify-center gap-1">
                             {product.visible ? (
-                              <>
-                                <Eye className="w-4 h-4 text-green-500" />
-                                <span className="text-sm text-green-700 font-medium">Published</span>
-                              </>
+                              <div title="Published">
+                                <Eye className="w-3 h-3 text-green-500" />
+                              </div>
                             ) : (
-                              <>
-                                <EyeOff className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">Draft</span>
-                              </>
+                              <div title="Draft">
+                                <EyeOff className="w-3 h-3 text-gray-400" />
+                              </div>
                             )}
                             {product.is_locked && (
                               <div title="Locked">
-                                <Lock className="w-4 h-4 text-orange-500 ml-1" />
+                                <Lock className="w-3 h-3 text-orange-500" />
                               </div>
                             )}
                           </div>
                         </td>
 
                         {/* Created Date */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm text-gray-600">
-                              {formatDate(product.created_at)}
-                            </span>
-                          </div>
+                        <td className="py-3 px-2 text-center">
+                          <span className="text-xs text-gray-600" title={formatDate(product.created_at)}>
+                            {new Date(product.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
                         </td>
 
                         {/* Action */}
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-2 text-center">
                           <Button
                             onClick={() => handleProductSelect(product)}
                             variant={isSelected ? "primary" : "secondary"}
                             size="sm"
-                            className={isSelected ? "bg-green-600 hover:bg-green-700" : ""}
+                            className={`text-xs px-2 py-1 ${isSelected ? "bg-green-600 hover:bg-green-700" : ""}`}
                           >
-                            {isSelected ? 'Selected' : 'Select'}
+                            {isSelected ? '✓' : 'Select'}
                           </Button>
                         </td>
                       </tr>
