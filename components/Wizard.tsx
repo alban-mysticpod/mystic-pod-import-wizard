@@ -103,26 +103,6 @@ export function Wizard() {
     });
   }, [updateState]);
 
-  const handleStep3PrintifyProductNext = useCallback((product: PrintifyProduct) => {
-    // Quand un produit Printify est sélectionné, on skip l'étape 4 et va directement au step 5 (mockups)
-    // On configure automatiquement le blueprint et print provider depuis le produit
-    updateState({
-      selectedBlueprint: { 
-        id: product.blueprint_id, 
-        title: product.blueprint?.title || `Blueprint ${product.blueprint_id}`,
-        brand: product.blueprint?.brand || 'Printify',
-        model: product.blueprint?.model || product.title,
-        description: product.description,
-        images: product.blueprint?.images?.map(img => img.src) || [],
-        provider: 'printify',
-        created_at: product.created_at
-      } as Blueprint,
-      selectedPrintProviderId: product.print_provider_id,
-      // Stocker le produit Printify sélectionné pour l'utiliser plus tard
-      selectedPrintifyProduct: product,
-      currentStep: 5, // Skip step 4 (print provider selection) et aller aux mockups
-    });
-  }, [updateState]);
 
   const handleStep4Next = useCallback((printProviderId: number) => {
     updateState({
@@ -189,7 +169,6 @@ export function Wizard() {
               tokenRef={state.tokenRef}
               onNext={handleStep3Next}
               onPresetNext={handleStep3PresetNext}
-              onPrintifyProductNext={handleStep3PrintifyProductNext}
               onBack={handleBack}
             />
           )}
