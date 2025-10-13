@@ -108,7 +108,18 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
 
   const handleNext = async () => {
     if (selectedPreset && onPresetNext) {
-      onPresetNext(selectedPreset);
+      try {
+        // Appeler le webhook assign-preset quand un preset est sélectionné
+        console.log('🎯 Assigning preset for preset ID:', selectedPreset.id, 'blueprint:', selectedPreset.blueprint_id, 'importId:', importId);
+        await assignPreset(selectedPreset.blueprint_id, importId, selectedPreset.id);
+        console.log('✅ Preset assigned successfully');
+        
+        onPresetNext(selectedPreset);
+      } catch (err) {
+        console.error('❌ Failed to assign preset:', err);
+        // Continuer même si l'assignation du preset échoue
+        onPresetNext(selectedPreset);
+      }
       return;
     }
 

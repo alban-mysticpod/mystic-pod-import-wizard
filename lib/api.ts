@@ -120,13 +120,18 @@ export async function importToPrintify(
   return response.json();
 }
 
-export async function assignPreset(blueprintId: number, importId: string): Promise<{ ok: true }> {
+export async function assignPreset(blueprintId: number, importId: string, presetId?: string): Promise<{ ok: true }> {
   const userId = getUserId(); // Utiliser l'ID utilisateur existant
+  
+  const payload: any = { blueprintId, userId, importId };
+  if (presetId) {
+    payload.presetId = presetId;
+  }
   
   const response = await fetch('/api/assign-preset', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ blueprintId, userId, importId }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {

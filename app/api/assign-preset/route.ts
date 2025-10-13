@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { blueprintId, userId, importId } = body;
+    const { blueprintId, userId, importId, presetId } = body;
 
     if (!blueprintId || !userId || !importId) {
       return NextResponse.json(
@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
     }
 
     const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/assign-preset';
-    const payload = { blueprintId, userId, importId };
+    const payload: any = { blueprintId, userId, importId };
+    if (presetId) {
+      payload.presetId = presetId;
+    }
     
     console.log('🎯 Assigning preset via n8n webhook:');
     console.log('- URL:', webhookUrl);
