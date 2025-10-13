@@ -10,6 +10,7 @@ interface Step6Props {
   folderId: string;
   tokenRef: string;
   shopId: number;
+  importId: string;
   fileCount: number;
   onRestart: () => void;
   onBack?: () => void;
@@ -20,7 +21,7 @@ type ImportState = 'importing' | 'success' | 'error';
 // Global map to track import state across component re-renders
 const importState = new Map<string, boolean>();
 
-export function Step6Process({ folderId, tokenRef, shopId, fileCount, onRestart, onBack }: Step6Props) {
+export function Step6Process({ folderId, tokenRef, shopId, importId, fileCount, onRestart, onBack }: Step6Props) {
   const [currentState, setCurrentState] = useState<ImportState>('importing');
   const [error, setError] = useState('');
   const [importResult, setImportResult] = useState<any>(null);
@@ -40,8 +41,8 @@ export function Step6Process({ folderId, tokenRef, shopId, fileCount, onRestart,
     setError('');
 
     try {
-      console.log('🚀 Starting import to Printify...');
-      const result = await importToPrintify(folderId, tokenRef, shopId);
+      console.log('🚀 Starting import to Printify... importId:', importId);
+      const result = await importToPrintify(folderId, tokenRef, shopId, importId);
       console.log('✅ Import completed:', result);
       
       setImportResult(result);
@@ -54,7 +55,7 @@ export function Step6Process({ folderId, tokenRef, shopId, fileCount, onRestart,
       // Reset import state on error to allow retry
       importState.set(importKey, false);
     }
-  }, [folderId, tokenRef, shopId]);
+  }, [folderId, tokenRef, shopId, importId]);
 
   useEffect(() => {
     // Start import immediately when component mounts
@@ -62,7 +63,7 @@ export function Step6Process({ folderId, tokenRef, shopId, fileCount, onRestart,
     if (!importState.get(importKey)) {
       startImport();
     }
-  }, [folderId, tokenRef, shopId, startImport]);
+  }, [folderId, tokenRef, shopId, importId, startImport]);
 
   if (currentState === 'importing') {
     return (

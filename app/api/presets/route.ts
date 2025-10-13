@@ -17,13 +17,14 @@ export async function GET() {
       );
     }
 
-                console.log(`📦 Fetching presets for user: ${userId}`);
+                console.log(`📦 Fetching favorite presets for user: ${userId}`);
 
-                // Fetch presets for the user (simple query without joins for now)
+                // Fetch only favorite presets for the user (for settings page)
                 const { data, error } = await supabaseAdmin
                   .from('presets')
                   .select('*')
                   .eq('user_id', userId)
+                  .eq('favorite', true) // Filtrer seulement les presets favoris
                   .order('created_at', { ascending: false });
 
     if (error) {
@@ -34,7 +35,7 @@ export async function GET() {
       );
     }
 
-    console.log(`✅ Found ${data?.length || 0} presets`);
+    console.log(`✅ Found ${data?.length || 0} favorite presets`);
 
     return NextResponse.json({ presets: data || [] });
   } catch (error) {
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
         blueprint_id,
         print_provider_id,
         visibility: 'private', // Always private for now
+        favorite: true, // Les presets créés manuellement sont favoris par défaut
         placements,
       })
       .select()

@@ -10,6 +10,7 @@ import { Upload, RefreshCw, ArrowLeft, Check, Image as ImageIcon, Settings } fro
 
 interface Step5Props {
   folderId: string;
+  importId: string;
   files: SupabaseFile[];
   onNext: (files: SupabaseFile[]) => void;
   onBack?: () => void;
@@ -18,7 +19,7 @@ interface Step5Props {
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
-export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
+export function Step5Preview({ folderId, importId, files, onNext, onBack }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(files.length === 0);
@@ -36,8 +37,8 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
     setError('');
 
     try {
-      console.log('🖼️ Fetching files for folder:', folderId);
-      const result = await fetchImages(folderId);
+      console.log('🖼️ Fetching files for folder:', folderId, 'importId:', importId);
+      const result = await fetchImages(folderId, importId);
       console.log('✅ Files fetched:', result);
       setCurrentFiles(result.files);
     } catch (err) {
@@ -49,7 +50,7 @@ export function Step5Preview({ folderId, files, onNext, onBack }: Step5Props) {
       // Keep the loading state as true to prevent future calls for the same folder
       // loadingState.set(folderId, true); // Already set above
     }
-  }, [folderId]);
+  }, [folderId, importId]);
 
   useEffect(() => {
     // Only load if we have a folderId, no files yet, and haven't already loaded this folder

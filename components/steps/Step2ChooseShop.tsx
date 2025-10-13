@@ -12,11 +12,12 @@ import { cn } from '@/lib/utils';
 
 interface Step2Props {
   selectedShopId: number | null;
+  importId: string;
   onNext: (data: { apiToken: string; tokenRef: string; shops: PrintifyShop[]; shopId: number }) => void;
   onBack?: () => void;
 }
 
-export function Step2ChooseShop({ selectedShopId, onNext, onBack }: Step2Props) {
+export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: Step2Props) {
   const [savedTokens, setSavedTokens] = useState<ApiToken[]>([]);
   const [isLoadingTokens, setIsLoadingTokens] = useState(true);
   const [hasConnectedAccount, setHasConnectedAccount] = useState(false);
@@ -73,8 +74,8 @@ export function Step2ChooseShop({ selectedShopId, onNext, onBack }: Step2Props) 
     setTokenError('');
     
     try {
-      console.log('🚀 Validating Printify token and loading shops...');
-      const result = await testPrintifyToken(token);
+      console.log('🚀 Validating Printify token and loading shops... importId:', importId);
+      const result = await testPrintifyToken(token, importId);
       
       if (!result || !result.tokenRef || !Array.isArray(result.shops)) {
         throw new Error('Invalid response from Printify');
@@ -147,7 +148,7 @@ export function Step2ChooseShop({ selectedShopId, onNext, onBack }: Step2Props) 
     
     try {
       // Logger la sélection du shop
-      await chooseShop(tokenRef, selectedShop);
+      await chooseShop(tokenRef, selectedShop, importId);
       
       // Passer au step suivant
       onNext({

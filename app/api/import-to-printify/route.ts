@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { folderId, tokenRef, shopId, userId } = body;
+    const { folderId, tokenRef, shopId, userId, importId } = body;
 
     if (!folderId || !tokenRef || !shopId || !userId) {
       return NextResponse.json(
@@ -12,12 +12,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!importId) {
+      return NextResponse.json(
+        { error: 'importId is required' },
+        { status: 400 }
+      );
+    }
+
     const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/import-to-printify';
-    const payload = { folderId, tokenRef, shopId, userId };
+    const payload = { folderId, tokenRef, shopId, userId, importId };
     
     console.log('🚀 Starting import to Printify via n8n webhook:');
     console.log('- URL:', webhookUrl);
-    console.log('- Payload:', { folderId, tokenRef, shopId: shopId, userId });
+    console.log('- Payload:', { folderId, tokenRef, shopId: shopId, userId, importId });
 
     const n8nResponse = await fetch(webhookUrl, {
       method: 'POST',

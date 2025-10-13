@@ -2,6 +2,7 @@ export interface DriveValidateResponse {
   folderId: string;
   fileCount: number;
   sample: Array<{ id: string; name: string }>;
+  importId: string; // ID de l'import créé dans Supabase
   message?: string;
 }
 
@@ -135,6 +136,7 @@ export interface Preset {
   blueprint_id: number;
   print_provider_id: number;
   visibility: 'private' | 'public';
+  favorite: boolean; // Indique si le preset est sauvegardé en favori par l'utilisateur
   created_at: string;
   updated_at: string;
   placements: PresetPlacements;
@@ -151,6 +153,7 @@ export interface WizardState {
   folderId: string;
   fileCount: number;
   sampleFiles: Array<{ id: string; name: string }>;
+  importId: string; // ID de l'import pour tracking
   apiToken: string;
   tokenRef: string;
   shops: PrintifyShop[];

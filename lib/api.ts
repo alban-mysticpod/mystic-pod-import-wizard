@@ -36,13 +36,13 @@ export async function validateDriveFolder(folderUrl: string): Promise<DriveValid
   return response.json();
 }
 
-export async function testPrintifyToken(apiToken: string): Promise<PrintifyTestResponse> {
+export async function testPrintifyToken(apiToken: string, importId: string): Promise<PrintifyTestResponse> {
   const userId = getUserId(); // Utiliser l'ID utilisateur existant
   
   const response = await fetch(API_BASE.printifyTest, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ apiToken, userId }),
+    body: JSON.stringify({ apiToken, userId, importId }),
   });
 
   if (!response.ok) {
@@ -52,13 +52,13 @@ export async function testPrintifyToken(apiToken: string): Promise<PrintifyTestR
   return response.json();
 }
 
-export async function chooseShop(tokenRef: string, shopId: number): Promise<{ ok: true }> {
+export async function chooseShop(tokenRef: string, shopId: number, importId: string): Promise<{ ok: true }> {
   const userId = getUserId(); // Utiliser l'ID utilisateur existant
   
   const response = await fetch(API_BASE.sessionChooseShop, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tokenRef, shopId, userId }),
+    body: JSON.stringify({ tokenRef, shopId, userId, importId }),
   });
 
   if (!response.ok) {
@@ -68,13 +68,13 @@ export async function chooseShop(tokenRef: string, shopId: number): Promise<{ ok
   return response.json();
 }
 
-export async function fetchImages(folderId: string): Promise<FetchImagesResponse> {
+export async function fetchImages(folderId: string, importId: string): Promise<FetchImagesResponse> {
   const userId = getUserId(); // Utiliser l'ID utilisateur existant
   
   const response = await fetch(API_BASE.fetchImages, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ folderId, userId }),
+    body: JSON.stringify({ folderId, userId, importId }),
   });
 
   if (!response.ok) {
@@ -101,14 +101,15 @@ export async function listDriveFiles(folderId: string): Promise<DriveListRespons
 export async function importToPrintify(
   folderId: string,
   tokenRef: string,
-  shopId: number
+  shopId: number,
+  importId: string
 ): Promise<ImportToPrintifyResponse> {
   const userId = getUserId(); // Utiliser l'ID utilisateur existant
   
   const response = await fetch(API_BASE.importToPrintify, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ folderId, tokenRef, shopId, userId }),
+    body: JSON.stringify({ folderId, tokenRef, shopId, userId, importId }),
   });
 
   if (!response.ok) {

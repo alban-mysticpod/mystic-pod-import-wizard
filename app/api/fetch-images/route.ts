@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { folderId, userId } = body;
+    const { folderId, userId, importId } = body;
 
     if (!folderId) {
       return NextResponse.json(
@@ -19,8 +19,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!importId) {
+      return NextResponse.json(
+        { error: 'importId is required' },
+        { status: 400 }
+      );
+    }
+
     const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/fetch-images';
-    const payload = { folderId, userId };
+    const payload = { folderId, userId, importId };
     
     console.log('🖼️ Fetching images from n8n webhook:');
     console.log('- URL:', webhookUrl);

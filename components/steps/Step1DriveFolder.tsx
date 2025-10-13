@@ -12,7 +12,7 @@ interface Step1Props {
   folderUrl: string;
   fileCount: number;
   sampleFiles: Array<{ id: string; name: string }>;
-  onNext: (data: { folderUrl: string; folderId: string; fileCount: number; sampleFiles: Array<{ id: string; name: string }> }) => void;
+  onNext: (data: { folderUrl: string; folderId: string; fileCount: number; sampleFiles: Array<{ id: string; name: string }>; importId: string }) => void;
 }
 
 export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: Step1Props) {
@@ -23,7 +23,8 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
     folderId: string;
     fileCount: number;
     sampleFiles: Array<{ id: string; name: string }>;
-  } | null>(fileCount > 0 ? { folderId: '', fileCount, sampleFiles } : null);
+    importId: string;
+  } | null>(fileCount > 0 ? { folderId: '', fileCount, sampleFiles, importId: '' } : null);
 
   const handleValidate = async () => {
     // Validation stricte : vérifier si le champ est vide
@@ -58,20 +59,22 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
       }
       
       // Vérifier que les champs requis sont présents
-      if (!result.folderId || typeof result.fileCount !== 'number') {
+      if (!result.folderId || typeof result.fileCount !== 'number' || !result.importId) {
         console.error('❌ Invalid response structure:', {
           hasFolderId: !!result.folderId,
           fileCountType: typeof result.fileCount,
-          hasSample: !!result.sample
+          hasSample: !!result.sample,
+          hasImportId: !!result.importId
         });
-        throw new Error(`Invalid response format. Expected {folderId, fileCount, sample} but got: ${JSON.stringify(result)}`);
+        throw new Error(`Invalid response format. Expected {folderId, fileCount, sample, importId} but got: ${JSON.stringify(result)}`);
       }
       
-      console.log('✅ Valid response structure detected');
+      console.log('✅ Valid response structure detected with importId:', result.importId);
       setValidationResult({
         folderId: result.folderId,
         fileCount: result.fileCount,
         sampleFiles: result.sample || [],
+        importId: result.importId,
       });
     } catch (err) {
       console.error('❌ Webhook error details:', {
@@ -93,6 +96,7 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
         folderId: validationResult.folderId,
         fileCount: validationResult.fileCount,
         sampleFiles: validationResult.sampleFiles,
+        importId: validationResult.importId,
       });
     }
   };

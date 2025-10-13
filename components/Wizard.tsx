@@ -16,6 +16,7 @@ const initialState: WizardState = {
   folderId: '',
   fileCount: 0,
   sampleFiles: [],
+  importId: '', // ID de l'import pour tracking
   apiToken: '',
   tokenRef: '',
   shops: [],
@@ -50,6 +51,7 @@ export function Wizard() {
     folderId: string;
     fileCount: number;
     sampleFiles: Array<{ id: string; name: string }>;
+    importId: string;
   }) => {
     updateState({
       ...data,
@@ -122,6 +124,7 @@ export function Wizard() {
           {state.currentStep === 2 && (
             <Step2ChooseShop
               selectedShopId={state.selectedShopId}
+              importId={state.importId}
               onNext={handleStep2Next}
               onBack={handleBack}
             />
@@ -147,6 +150,7 @@ export function Wizard() {
           {state.currentStep === 5 && (
             <Step5Preview
               folderId={state.folderId}
+              importId={state.importId}
               files={state.files}
               onNext={handleStep5Next}
               onBack={handleBack}
@@ -158,6 +162,7 @@ export function Wizard() {
               folderId={state.folderId}
               tokenRef={state.tokenRef}
               shopId={state.selectedShopId}
+              importId={state.importId}
               fileCount={state.fileCount}
               onRestart={handleRestart}
               onBack={handleBack}
