@@ -167,6 +167,21 @@ export async function listPrintifyProducts(tokenRef: string, importId: string, p
   return response.json();
 }
 
+export async function createPresetFromPrintifyProduct(productId: string, importId: string): Promise<{ preset: any }> {
+  const userId = getUserId();
+  const response = await fetch('/api/create-preset-from-printify-product', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId, userId, importId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create preset from Printify product: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export async function startImport(
   tokenRef: string,
   folderId: string,

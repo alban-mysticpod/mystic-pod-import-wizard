@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
-import { listPrintifyProducts } from '@/lib/api';
+import { listPrintifyProducts, createPresetFromPrintifyProduct } from '@/lib/api';
 import { PrintifyProduct } from '@/types';
 import { X, Calendar, Package, Printer, Eye, EyeOff, Lock } from 'lucide-react';
 
@@ -24,6 +24,7 @@ export function PrintifyProductModal({
   const [products, setProducts] = useState<PrintifyProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<PrintifyProduct | null>(null);
   const [paginationInfo, setPaginationInfo] = useState<{
@@ -91,10 +92,26 @@ export function PrintifyProductModal({
     setSelectedProduct(product);
   };
 
-  const handleImportProduct = () => {
-    if (selectedProduct) {
+  const handleImportProduct = async () => {
+    if (!selectedProduct) return;
+
+    setIsImporting(true);
+    setError('');
+
+    try {
+      console.log('🔄 Creating preset from Printify product:', selectedProduct.id);
+      const result = await createPresetFromPrintifyProduct(selectedProduct.id, importId);
+      console.log('✅ Preset created from Printify product:', result);
+      
+      // Call the original onSelectProduct callback with the product
       onSelectProduct(selectedProduct);
       onClose();
+    } catch (err) {
+      console.error('❌ Failed to create preset from Printify product:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to import product settings';
+      setError(errorMessage);
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -327,6 +344,13 @@ export function PrintifyProductModal({
         {/* Footer */}
         {selectedProduct && (
           <div className="border-t border-gray-200 p-6 bg-gray-50">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+            
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-gray-900">
@@ -343,9 +367,17 @@ export function PrintifyProductModal({
                 <Button
                   onClick={handleImportProduct}
                   variant="primary"
-                  className="bg-green-600 hover:bg-green-700"
+                  disabled={isImporting}
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-green-400"
                 >
-                  Import Product
+                  {isImporting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Importing...
+                    </>
+                  ) : (
+                    'Import Product'
+                  )}
                 </Button>
               </div>
             </div>
