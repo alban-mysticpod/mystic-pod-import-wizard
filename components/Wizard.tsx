@@ -6,8 +6,9 @@ import { Step1DriveFolder } from './steps/Step1DriveFolder';
 import { Step2ChooseShop } from './steps/Step2ChooseShop';
 import { Step3ChooseBlueprint } from './steps/Step3ChooseBlueprint';
 import { Step4ChoosePrintProvider } from './steps/Step4ChoosePrintProvider';
-import { Step5Preview } from './steps/Step5Preview';
-import { Step6Process } from './steps/Step6Process';
+import { Step5Mockups } from './steps/Step5Mockups';
+import { Step6Preview } from './steps/Step6Preview';
+import { Step7Process } from './steps/Step7Process';
 import { WizardState, PrintifyShop, SupabaseFile, Blueprint, Preset } from '@/types';
 
 const initialState: WizardState = {
@@ -81,7 +82,7 @@ export function Wizard() {
   }, [updateState]);
 
   const handleStep3PresetNext = useCallback((preset: Preset) => {
-    // Quand un preset est sélectionné, on skip les étapes 4 et va directement au step 5
+    // Quand un preset est sélectionné, on skip l'étape 4 et va directement au step 5 (mockups)
     // On configure automatiquement le blueprint et print provider depuis le preset
     updateState({
       selectedBlueprint: { 
@@ -97,21 +98,28 @@ export function Wizard() {
       selectedPrintProviderId: preset.print_provider_id,
       // Stocker le preset sélectionné pour l'utiliser plus tard
       selectedPreset: preset,
-      currentStep: 5, // Skip step 4 (print provider selection)
+      currentStep: 5, // Skip step 4 (print provider selection) et aller aux mockups
     });
   }, [updateState]);
 
   const handleStep4Next = useCallback((printProviderId: number) => {
     updateState({
       selectedPrintProviderId: printProviderId,
-      currentStep: 5,
+      currentStep: 5, // Aller aux mockups
     });
   }, [updateState]);
 
   const handleStep5Next = useCallback((files: SupabaseFile[]) => {
     updateState({
       files,
-      currentStep: 6,
+      currentStep: 6, // Aller au preview final
+    });
+  }, [updateState]);
+
+  const handleStep6Next = useCallback((files: SupabaseFile[]) => {
+    updateState({
+      files,
+      currentStep: 7, // Aller au process final
     });
   }, [updateState]);
 
@@ -173,7 +181,7 @@ export function Wizard() {
           )}
 
           {state.currentStep === 5 && (
-            <Step5Preview
+            <Step5Mockups
               folderId={state.folderId}
               importId={state.importId}
               files={state.files}
@@ -182,8 +190,18 @@ export function Wizard() {
             />
           )}
 
-          {state.currentStep === 6 && state.selectedShopId && (
-            <Step6Process
+          {state.currentStep === 6 && (
+            <Step6Preview
+              folderId={state.folderId}
+              importId={state.importId}
+              files={state.files}
+              onNext={handleStep6Next}
+              onBack={handleBack}
+            />
+          )}
+
+          {state.currentStep === 7 && state.selectedShopId && (
+            <Step7Process
               folderId={state.folderId}
               tokenRef={state.tokenRef}
               shopId={state.selectedShopId}

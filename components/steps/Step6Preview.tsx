@@ -8,7 +8,7 @@ import { SupabaseFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
 import { Upload, RefreshCw, ArrowLeft, Check, Image as ImageIcon, Settings } from 'lucide-react';
 
-interface Step5Props {
+interface Step6Props {
   folderId: string;
   importId: string;
   files: SupabaseFile[];
@@ -19,7 +19,7 @@ interface Step5Props {
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
-export function Step5Preview({ folderId, importId, files, onNext, onBack }: Step5Props) {
+export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step6Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(files.length === 0);

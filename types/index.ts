@@ -40,6 +40,7 @@ export interface SupabaseFile {
   width: number; // Required
   height: number; // Required
   checksum?: string | null;
+  mockup_images?: string[] | null; // Array d'URLs des images de mockup (4 en général)
   created_at: string;
 }
 
@@ -174,6 +175,7 @@ export const STEPS = [
   { id: 2, title: 'Choose Shop', description: 'Select your Printify shop' },
   { id: 3, title: 'Choose Blueprint', description: 'Select product template' },
   { id: 4, title: 'Choose Print Provider', description: 'Select print provider' },
-  { id: 5, title: 'Preview Designs', description: 'Review your designs' },
-  { id: 6, title: 'Import & Process', description: 'Import to Printify' },
+  { id: 5, title: 'Preview Mockups', description: 'See how designs will look' },
+  { id: 6, title: 'Preview Designs', description: 'Review your designs' },
+  { id: 7, title: 'Import & Process', description: 'Import to Printify' },
 ] as const;
