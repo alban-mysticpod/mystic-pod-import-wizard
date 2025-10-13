@@ -5,7 +5,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PrintifyProductModal } from '@/components/PrintifyProductModal';
 import { Blueprint, Preset, PrintifyProduct } from '@/types';
-import { assignPreset } from '@/lib/api';
+import { assignPreset, generateMockupImages } from '@/lib/api';
 import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink } from 'lucide-react';
 
 interface Step3Props {
@@ -114,10 +114,15 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
         await assignPreset(selectedPreset.blueprint_id, importId, selectedPreset.id);
         console.log('✅ Preset assigned successfully');
         
+        // Générer les mockup images après l'assignation du preset
+        console.log('🔄 Generating mockup images for preset selection, importId:', importId);
+        await generateMockupImages(importId);
+        console.log('✅ Mockup images generation triggered');
+        
         onPresetNext(selectedPreset);
       } catch (err) {
-        console.error('❌ Failed to assign preset:', err);
-        // Continuer même si l'assignation du preset échoue
+        console.error('❌ Failed to assign preset or generate mockups:', err);
+        // Continuer même si l'assignation du preset ou la génération des mockups échoue
         onPresetNext(selectedPreset);
       }
       return;
