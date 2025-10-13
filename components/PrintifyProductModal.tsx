@@ -145,7 +145,7 @@ export function PrintifyProductModal({
           ) : error ? (
             <div className="text-center py-12">
               <p className="text-red-600 mb-4">{error}</p>
-              <Button onClick={loadProducts} variant="primary">
+              <Button onClick={() => loadProducts()} variant="primary">
                 Try Again
               </Button>
             </div>
@@ -284,43 +284,43 @@ export function PrintifyProductModal({
                 </tbody>
               </table>
             </div>
+          )}
 
-            {/* Pagination Info and Load More Button */}
-            {!isLoading && !error && products.length > 0 && (
-              <div className="mt-6 flex flex-col items-center gap-4">
-                <div className="text-sm text-gray-600 text-center">
-                  Showing {products.length} of {paginationInfo?.totalProducts || products.length} products
-                  {paginationInfo && paginationInfo.totalProducts > products.length && (
-                    <span className="ml-2 text-blue-600">
-                      (Page {paginationInfo.currentPage} of {paginationInfo.lastPage})
-                    </span>
-                  )}
-                </div>
-                
-                {paginationInfo?.nextPage && (
-                  <Button
-                    onClick={handleLoadMore}
-                    variant="secondary"
-                    disabled={isLoadingMore}
-                    className="flex items-center gap-2"
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        Load More Products
-                        <span className="text-xs text-gray-500">
-                          ({paginationInfo.totalProducts - products.length} remaining)
-                        </span>
-                      </>
-                    )}
-                  </Button>
+          {/* Pagination Info and Load More Button */}
+          {!isLoading && !error && products.length > 0 && (
+            <div className="mt-6 flex flex-col items-center gap-4">
+              <div className="text-sm text-gray-600 text-center">
+                Showing {products.length} of {paginationInfo?.totalProducts || products.length} products
+                {paginationInfo && paginationInfo.totalProducts > products.length && (
+                  <span className="ml-2 text-blue-600">
+                    (Page {paginationInfo.currentPage} of {paginationInfo.lastPage})
+                  </span>
                 )}
               </div>
-            )}
+              
+              {paginationInfo?.nextPage && (
+                <Button
+                  onClick={handleLoadMore}
+                  variant="secondary"
+                  disabled={isLoadingMore}
+                  className="flex items-center gap-2"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      Load More Products
+                      <span className="text-xs text-gray-500">
+                        ({paginationInfo.totalProducts - products.length} remaining)
+                      </span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           )}
         </div>
 
