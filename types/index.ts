@@ -219,6 +219,7 @@ export interface WizardState {
   importLogs: string[];
   isComplete: boolean;
   error: string | null;
+  shouldGenerateMockups: boolean; // Flag pour savoir si on doit générer les mockups
 }
 
 export const STEPS = [

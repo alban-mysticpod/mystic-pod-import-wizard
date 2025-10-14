@@ -5,7 +5,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PrintifyProductModal } from '@/components/PrintifyProductModal';
 import { Blueprint, Preset, PrintifyProduct } from '@/types';
-import { assignPreset, generateMockupImages } from '@/lib/api';
+import { assignPreset } from '@/lib/api';
 import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink } from 'lucide-react';
 
 interface Step3Props {
@@ -106,27 +106,23 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
     setSelected(null); // Désélectionner le blueprint si on sélectionne un preset
   };
 
-  const handleNext = async () => {
-    if (selectedPreset && onPresetNext) {
-      try {
-        // Appeler le webhook assign-preset quand un preset est sélectionné
-        console.log('🎯 Assigning preset for preset ID:', selectedPreset.id, 'blueprint:', selectedPreset.blueprint_id, 'importId:', importId);
-        await assignPreset(selectedPreset.blueprint_id, importId, selectedPreset.id);
-        console.log('✅ Preset assigned successfully');
-        
-        // Générer les mockup images après l'assignation du preset
-        console.log('🔄 Generating mockup images for preset selection, importId:', importId);
-        await generateMockupImages(importId);
-        console.log('✅ Mockup images generation triggered');
-        
-        onPresetNext(selectedPreset);
-      } catch (err) {
-        console.error('❌ Failed to assign preset or generate mockups:', err);
-        // Continuer même si l'assignation du preset ou la génération des mockups échoue
-        onPresetNext(selectedPreset);
-      }
-      return;
-    }
+        const handleNext = async () => {
+          if (selectedPreset && onPresetNext) {
+            try {
+              // Appeler le webhook assign-preset quand un preset est sélectionné
+              console.log('🎯 Assigning preset for preset ID:', selectedPreset.id, 'blueprint:', selectedPreset.blueprint_id, 'importId:', importId);
+              await assignPreset(selectedPreset.blueprint_id, importId, selectedPreset.id);
+              console.log('✅ Preset assigned successfully');
+              
+              // Navigation immédiate - la génération des mockups se fera dans Step5Mockups
+              onPresetNext(selectedPreset);
+            } catch (err) {
+              console.error('❌ Failed to assign preset:', err);
+              // Continuer même si l'assignation du preset échoue
+              onPresetNext(selectedPreset);
+            }
+            return;
+          }
 
     if (!selected) {
       setError('Please select a blueprint or preset');

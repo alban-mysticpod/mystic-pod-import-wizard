@@ -5,10 +5,10 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Mystic POD Import Wizard',
+  title: 'WeScale Import Wizard',
   description: 'Import your designs from Google Drive to Printify seamlessly',
   keywords: ['printify', 'google drive', 'print on demand', 'design import'],
-  authors: [{ name: 'Mystic POD' }],
+  authors: [{ name: 'WeScale' }],
 };
 
 export const viewport = {

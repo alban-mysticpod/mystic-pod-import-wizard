@@ -32,6 +32,7 @@ const initialState: WizardState = {
   importLogs: [],
   isComplete: false,
   error: null,
+  shouldGenerateMockups: false, // Nouveau flag pour savoir si on doit générer les mockups
 };
 
 export function Wizard() {
@@ -99,6 +100,7 @@ export function Wizard() {
       selectedPrintProviderId: preset.print_provider_id,
       // Stocker le preset sélectionné pour l'utiliser plus tard
       selectedPreset: preset,
+      shouldGenerateMockups: true, // Marquer qu'on doit générer les mockups
       currentStep: 5, // Skip step 4 (print provider selection) et aller aux mockups
     });
   }, [updateState]);
@@ -120,6 +122,7 @@ export function Wizard() {
       selectedPrintProviderId: product.print_provider_id,
       // Stocker le produit Printify sélectionné pour l'utiliser plus tard
       selectedPrintifyProduct: product,
+      shouldGenerateMockups: true, // Marquer qu'on doit générer les mockups
       currentStep: 5, // Skip step 4 (print provider selection) et aller aux mockups
     });
   }, [updateState]);
@@ -134,6 +137,7 @@ export function Wizard() {
   const handleStep5Next = useCallback((files: SupabaseFile[]) => {
     updateState({
       files,
+      shouldGenerateMockups: false, // Remettre à false après utilisation
       currentStep: 6, // Aller au preview final
     });
   }, [updateState]);
@@ -154,7 +158,7 @@ export function Wizard() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Mystic POD Import Wizard
+            WeScale Import Wizard
           </h1>
           <p className="text-xl text-gray-600">
             Import your designs from Google Drive to Printify
@@ -209,6 +213,7 @@ export function Wizard() {
               folderId={state.folderId}
               importId={state.importId}
               files={state.files}
+              shouldGenerateMockups={state.shouldGenerateMockups}
               onNext={handleStep5Next}
               onBack={handleBack}
             />

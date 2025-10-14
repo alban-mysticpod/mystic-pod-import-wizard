@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Header } from '@/components/Header';
-import { ArrowLeft, Settings, Mail, Calendar, Package, Key, Trash2, Plus, CheckCircle, XCircle, Layers } from 'lucide-react';
+import { ArrowLeft, Settings, Mail, Calendar, Package, Key, Trash2, Plus, CheckCircle, XCircle, Layers, Activity, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { fetchUserStats, UserStats } from '@/lib/api';
 
 interface ApiToken {
   id: string;
@@ -18,8 +19,10 @@ interface ApiToken {
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
   const [tokens, setTokens] = useState<ApiToken[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingTokens, setIsLoadingTokens] = useState(true);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [deletingTokenId, setDeletingTokenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,11 +37,16 @@ export default function ProfilePage() {
         const tokensResponse = await fetch('/api/user/tokens?userId=user_test&provider=printify');
         const tokensData = await tokensResponse.json();
         setTokens(tokensData);
+
+        // Fetch user stats
+        const statsData = await fetchUserStats();
+        setStats(statsData);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
         setIsLoadingTokens(false);
+        setIsLoadingStats(false);
       }
     }
     fetchData();
@@ -86,11 +94,11 @@ export default function ProfilePage() {
     });
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingStats) {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-16 py-12 px-4 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-24 py-12 px-4 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading profile...</p>
@@ -115,7 +123,7 @@ export default function ProfilePage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-16 py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-24 py-12 px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -171,14 +179,14 @@ export default function ProfilePage() {
 
           {/* Quick Links */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Link href="/profile/presets">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <div className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+            <Link href="/profile/presets" className="h-full">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <div className="p-6 h-full flex items-center">
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                       <Layers className="w-6 h-6 text-purple-600" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900">My Presets</h3>
                       <p className="text-sm text-gray-600">Manage design placement configurations</p>
                     </div>
@@ -187,14 +195,14 @@ export default function ProfilePage() {
               </Card>
             </Link>
 
-            <Link href="/profile/settings">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <div className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+            <Link href="/profile/settings" className="h-full">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <div className="p-6 h-full flex items-center">
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                       <Settings className="w-6 h-6 text-blue-600" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900">Settings</h3>
                       <p className="text-sm text-gray-600">Update your profile information</p>
                     </div>
@@ -285,23 +293,29 @@ export default function ProfilePage() {
             <Card>
               <div className="p-6 text-center">
                 <Package className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">
+                  {stats?.totalImports || 0}
+                </p>
                 <p className="text-sm text-gray-600">Total Imports</p>
               </div>
             </Card>
 
             <Card>
               <div className="p-6 text-center">
-                <Package className="w-8 h-8 text-green-500 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
+                <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-3" />
+                <p className="text-3xl font-bold text-gray-900 mb-1">
+                  {stats?.successfulImports || 0}
+                </p>
                 <p className="text-sm text-gray-600">Successful</p>
               </div>
             </Card>
 
             <Card>
               <div className="p-6 text-center">
-                <Package className="w-8 h-8 text-purple-500 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
+                <TrendingUp className="w-8 h-8 text-purple-500 mx-auto mb-3" />
+                <p className="text-3xl font-bold text-gray-900 mb-1">
+                  {stats?.designsUploaded || 0}
+                </p>
                 <p className="text-sm text-gray-600">Designs Uploaded</p>
               </div>
             </Card>
@@ -310,14 +324,62 @@ export default function ProfilePage() {
           {/* Recent Activity */}
           <Card>
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
-              <div className="text-center py-12">
-                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 mb-4">No activity yet</p>
-                <Link href="/">
-                  <Button variant="primary">Start Your First Import</Button>
-                </Link>
-              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                Recent Activity
+              </h2>
+              
+              {!stats?.recentActivity || stats.recentActivity.length === 0 ? (
+                <div className="text-center py-12">
+                  <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 mb-4">No activity yet</p>
+                  <Link href="/">
+                    <Button variant="primary">Start Your First Import</Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {stats.recentActivity.map((event) => (
+                    <div
+                      key={event.id}
+                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                        event.severity === 'error' ? 'bg-red-500' :
+                        event.severity === 'warning' ? 'bg-yellow-500' :
+                        event.severity === 'success' ? 'bg-green-500' :
+                        'bg-blue-500'
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-medium text-gray-900 capitalize">
+                            {event.eventType.replace(/-/g, ' ')}
+                          </p>
+                          <span className="text-xs text-gray-500 flex-shrink-0">
+                            {formatDate(event.createdAt)}
+                          </span>
+                        </div>
+                        {event.message && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            {event.message}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">
+                          Import: {event.importId.substring(0, 8)}...
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {stats.recentActivity.length >= 10 && (
+                    <div className="text-center pt-4">
+                      <p className="text-sm text-gray-500">
+                        Showing latest 10 activities
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </Card>
         </div>

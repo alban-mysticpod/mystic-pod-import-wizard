@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { fetchImages } from '@/lib/api';
+import { fetchImages, generateMockupImages } from '@/lib/api';
 import { SupabaseFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Eye, Image as ImageIcon } from 'lucide-react';
@@ -14,12 +14,13 @@ interface Step5Props {
   files: SupabaseFile[];
   onNext: (files: SupabaseFile[]) => void;
   onBack?: () => void;
+  shouldGenerateMockups?: boolean; // Nouveau prop pour savoir si on doit générer les mockups
 }
 
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
-export function Step5Mockups({ folderId, importId, files, onNext, onBack }: Step5Props) {
+export function Step5Mockups({ folderId, importId, files, onNext, onBack, shouldGenerateMockups }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
@@ -36,12 +37,19 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack }: Step
     setError('');
 
     try {
+      // Générer les mockups si nécessaire (pour les presets sélectionnés)
+      if (shouldGenerateMockups) {
+        console.log('🔄 Generating mockup images for preset selection, importId:', importId);
+        await generateMockupImages(importId);
+        console.log('✅ Mockup images generation triggered');
+      }
+
       console.log('🖼️ Fetching files with mockups for folder:', folderId, 'importId:', importId);
       const result = await fetchImages(folderId, importId);
       console.log('✅ Files with mockups fetched:', result);
       setCurrentFiles(result.files);
     } catch (err) {
-      console.error('❌ Failed to fetch files:', err);
+      console.error('❌ Failed to fetch files or generate mockups:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load files';
       setError(errorMessage);
     } finally {
@@ -49,7 +57,7 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack }: Step
       // Keep the loading state as true to prevent future calls for the same folder
       // loadingState.set(folderId, true); // Already set above
     }
-  }, [folderId, importId]);
+  }, [folderId, importId, shouldGenerateMockups]);
 
   useEffect(() => {
     // Only load if we have a folderId, no files yet, and haven't already loaded this folder
@@ -77,14 +85,31 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack }: Step
   }
 
   return (
-    <Card
-      title="Preview Mockups"
-      description={currentFiles.length > 0 
-        ? `See how your ${formatFileCount(currentFiles.length)} will look on the selected product.`
-        : "Loading your design mockups..."
-      }
-    >
+    <Card>
       <div className="space-y-6">
+        {/* Header with title and button */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Preview Mockups</h2>
+            <p className="text-gray-600">
+              {currentFiles.length > 0 
+                ? `See how your ${formatFileCount(currentFiles.length)} will look on the selected product.`
+                : "Loading your design mockups..."
+              }
+            </p>
+          </div>
+          {currentFiles.length > 0 && (
+            <Button
+              onClick={handleNext}
+              disabled={currentFiles.length === 0 || isLoading}
+              variant="success"
+              size="lg"
+              className="flex-shrink-0"
+            >
+              Continue to Final Preview
+            </Button>
+          )}
+        </div>
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex">

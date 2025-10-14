@@ -202,6 +202,30 @@ export async function generateMockupImages(importId: string): Promise<{ ok: true
   return response.json();
 }
 
+export interface UserStats {
+  totalImports: number;
+  successfulImports: number;
+  designsUploaded: number;
+  recentActivity: Array<{
+    id: string;
+    importId: string;
+    eventType: string;
+    message: string | null;
+    severity: string;
+    createdAt: string;
+  }>;
+}
+
+export async function fetchUserStats(): Promise<UserStats> {
+  const response = await fetch('/api/user/stats');
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch user stats: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export async function startImport(
   tokenRef: string,
   folderId: string,
