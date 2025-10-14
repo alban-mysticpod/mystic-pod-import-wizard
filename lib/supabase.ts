@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 // Uses SERVICE_ROLE_KEY to bypass RLS
 // ⚠️ NEVER expose this client to the frontend
 export const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key',
   {
     auth: {
       persistSession: false,
@@ -37,4 +37,12 @@ export interface UserSettings {
 export interface UserProfile extends User {
   user_settings: UserSettings | null;
 }
+
+// Helper function to check if Supabase is properly configured
+export const isSupabaseConfigured = () => {
+  return process.env.SUPABASE_URL && 
+         process.env.SUPABASE_SERVICE_ROLE_KEY && 
+         process.env.SUPABASE_URL !== 'https://placeholder.supabase.co' &&
+         process.env.SUPABASE_SERVICE_ROLE_KEY !== 'placeholder-key';
+};
 
