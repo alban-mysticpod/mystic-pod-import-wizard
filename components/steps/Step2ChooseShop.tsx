@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Card } from '@/components/Card';
@@ -34,6 +34,9 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
   const [selectedShop, setSelectedShop] = useState<number | null>(selectedShopId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Protection contre React StrictMode avec useRef
+  const validationInProgress = useRef<Set<string>>(new Set());
 
   // Charger les tokens sauvegardés au montage
   useEffect(() => {
@@ -72,21 +75,25 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
   };
 
   const validateTokenAndLoadShops = async (token: string) => {
+    const tokenKey = token.substring(0, 20); // Utiliser plus de caractères pour l'unicité
+    
     console.log('🔍 VALIDATION ATTEMPT:', {
       token: token.substring(0, 10) + '...',
       isValidatingToken,
       selectedToken: selectedToken?.substring(0, 10) + '...' || 'null',
       hasConnectedAccount,
+      inProgressSet: Array.from(validationInProgress.current),
       timestamp: new Date().toISOString()
     });
 
-    // Protection contre les appels multiples pour le même token
-    if (isValidatingToken || (selectedToken === token && hasConnectedAccount)) {
-      console.log('🛑 Skipping validation - already validating or token already validated:', token.substring(0, 10) + '...');
+    // Protection robuste contre React StrictMode et appels multiples
+    if (validationInProgress.current.has(tokenKey) || isValidatingToken || (selectedToken === token && hasConnectedAccount)) {
+      console.log('🛑 Skipping validation - already in progress or completed:', token.substring(0, 10) + '...');
       return;
     }
 
     console.log('✅ VALIDATION PROCEEDING for token:', token.substring(0, 10) + '...');
+    validationInProgress.current.add(tokenKey);
     setIsValidatingToken(true);
     setTokenError('');
     
@@ -133,6 +140,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       setHasConnectedAccount(false);
     } finally {
       setIsValidatingToken(false);
+      validationInProgress.current.delete(tokenKey);
     }
   };
 
