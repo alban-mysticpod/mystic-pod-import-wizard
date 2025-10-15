@@ -37,6 +37,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
 
   // Charger les tokens sauvegardés au montage
   useEffect(() => {
+    console.log('🔄 useEffect triggered - loading saved tokens');
     loadSavedTokens();
   }, []);
 
@@ -56,6 +57,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       if (tokens.length > 0) {
         setHasConnectedAccount(true);
         // Utiliser automatiquement le premier token (le plus récent)
+        console.log('📋 CALLING validateTokenAndLoadShops from loadSavedTokens');
         await validateTokenAndLoadShops(tokens[0].token_ref);
       } else {
         // Pas de tokens, afficher l'interface de connexion
@@ -70,12 +72,21 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
   };
 
   const validateTokenAndLoadShops = async (token: string) => {
+    console.log('🔍 VALIDATION ATTEMPT:', {
+      token: token.substring(0, 10) + '...',
+      isValidatingToken,
+      selectedToken: selectedToken?.substring(0, 10) + '...' || 'null',
+      hasConnectedAccount,
+      timestamp: new Date().toISOString()
+    });
+
     // Protection contre les appels multiples pour le même token
     if (isValidatingToken || (selectedToken === token && hasConnectedAccount)) {
       console.log('🛑 Skipping validation - already validating or token already validated:', token.substring(0, 10) + '...');
       return;
     }
 
+    console.log('✅ VALIDATION PROCEEDING for token:', token.substring(0, 10) + '...');
     setIsValidatingToken(true);
     setTokenError('');
     
@@ -136,10 +147,12 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       return;
     }
     
+    console.log('📋 CALLING validateTokenAndLoadShops from handleConnectPrintify');
     await validateTokenAndLoadShops(newToken);
   };
 
   const handleSelectToken = async (token: string) => {
+    console.log('📋 CALLING validateTokenAndLoadShops from handleSelectToken');
     await validateTokenAndLoadShops(token);
   };
 
