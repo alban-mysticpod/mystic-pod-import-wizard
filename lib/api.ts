@@ -37,8 +37,61 @@ export async function validateDriveFolder(folderUrl: string): Promise<DriveValid
   return response.json();
 }
 
+// Vérifier un token Printify - retourne maintenant un record apiToken
+export async function verifyPrintifyToken(apiToken: string, importId: string): Promise<{ id: string; token_ref: string }> {
+  const userId = getUserId();
+  
+  const response = await fetch('/api/verify-printify-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apiToken, userId, importId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to verify API token: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Logger le token API sélectionné
+export async function logPrintifyApiToken(apiTokenId: string, importId: string): Promise<void> {
+  const userId = getUserId();
+  
+  const response = await fetch('/api/log-printify-api-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apiTokenId, userId, importId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to log API token: ${response.statusText}`);
+  }
+}
+
+// Lister les shops associés au token
+export async function listPrintifyShops(importId: string): Promise<{ shops: PrintifyShop[] }> {
+  const userId = getUserId();
+  
+  const response = await fetch('/api/list-printify-shops', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, importId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to list shops: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Fonction legacy pour compatibilité (sera supprimée)
 export async function testPrintifyToken(apiToken: string, importId: string): Promise<PrintifyTestResponse> {
-  const userId = getUserId(); // Utiliser l'ID utilisateur existant
+  console.warn('⚠️ testPrintifyToken is deprecated, use verifyPrintifyToken + logPrintifyApiToken + listPrintifyShops instead');
+  
+  // Pour l'instant, on garde l'ancien comportement
+  const userId = getUserId();
   
   const response = await fetch(API_BASE.printifyTest, {
     method: 'POST',

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Card } from '@/components/Card';
-import { testPrintifyToken, chooseShop } from '@/lib/api';
+import { verifyPrintifyToken, logPrintifyApiToken, listPrintifyShops, chooseShop } from '@/lib/api';
 import { PrintifyShop, ApiToken } from '@/types';
 import { Store, CheckCircle, ExternalLink, ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { getUserId } from '@/lib/user';
@@ -74,16 +74,35 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
     setTokenError('');
     
     try {
-      console.log('🚀 Validating Printify token and loading shops... importId:', importId);
-      const result = await testPrintifyToken(token, importId);
+      console.log('🚀 Step 1: Verifying Printify token... importId:', importId);
       
-      if (!result || !result.tokenRef || !Array.isArray(result.shops)) {
-        throw new Error('Invalid response from Printify');
+      // Étape 1: Vérifier le token et récupérer le record apiToken
+      const tokenRecord = await verifyPrintifyToken(token, importId);
+      
+      if (!tokenRecord || !tokenRecord.id || !tokenRecord.token_ref) {
+        throw new Error('Invalid token verification response');
       }
       
-      console.log(`✅ Token validated. Found ${result.shops.length} shops`);
-      setTokenRef(result.tokenRef);
-      setShops(result.shops);
+      console.log('✅ Step 1 completed: Token verified, apiToken ID:', tokenRecord.id);
+      
+      // Étape 2: Logger le token sélectionné
+      console.log('🚀 Step 2: Logging selected API token...');
+      await logPrintifyApiToken(tokenRecord.id, importId);
+      console.log('✅ Step 2 completed: API token logged');
+      
+      // Étape 3: Lister les shops
+      console.log('🚀 Step 3: Loading Printify shops...');
+      const shopsResult = await listPrintifyShops(importId);
+      
+      if (!shopsResult || !Array.isArray(shopsResult.shops)) {
+        throw new Error('Invalid shops response');
+      }
+      
+      console.log(`✅ Step 3 completed: Found ${shopsResult.shops.length} shops`);
+      
+      // Mettre à jour l'état
+      setTokenRef(tokenRecord.token_ref);
+      setShops(shopsResult.shops);
       setHasConnectedAccount(true);
       setSelectedToken(token);
       setNewToken(''); // Clear the input after successful validation
@@ -91,7 +110,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       // Ne plus sélectionner automatiquement même s'il n'y a qu'un seul shop
       // L'utilisateur doit toujours faire le choix explicitement
     } catch (err) {
-      console.error('❌ Failed to validate token:', err);
+      console.error('❌ Failed to validate token and load shops:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to validate token';
       setTokenError(errorMessage);
       setHasConnectedAccount(false);
