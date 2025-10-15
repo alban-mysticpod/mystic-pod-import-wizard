@@ -70,6 +70,12 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
   };
 
   const validateTokenAndLoadShops = async (token: string) => {
+    // Protection contre les appels multiples pour le même token
+    if (isValidatingToken || (selectedToken === token && hasConnectedAccount)) {
+      console.log('🛑 Skipping validation - already validating or token already validated:', token.substring(0, 10) + '...');
+      return;
+    }
+
     setIsValidatingToken(true);
     setTokenError('');
     
