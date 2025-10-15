@@ -21,11 +21,10 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
   const [savedTokens, setSavedTokens] = useState<ApiToken[]>([]);
   const [isLoadingTokens, setIsLoadingTokens] = useState(true);
   const [hasConnectedAccount, setHasConnectedAccount] = useState(false);
-  const [showTokenInput, setShowTokenInput] = useState(false);
   
-  // Token input state
+  // Token state
+  const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const [newToken, setNewToken] = useState('');
-  const [selectedSavedToken, setSelectedSavedToken] = useState<string | null>(null);
   const [isValidatingToken, setIsValidatingToken] = useState(false);
   const [tokenError, setTokenError] = useState('');
   
@@ -59,11 +58,12 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
         // Utiliser automatiquement le premier token (le plus récent)
         await validateTokenAndLoadShops(tokens[0].token_ref);
       } else {
-        setShowTokenInput(true);
+        // Pas de tokens, afficher l'interface de connexion
+        setHasConnectedAccount(false);
       }
     } catch (err) {
       console.error('❌ Failed to load saved tokens:', err);
-      setShowTokenInput(true);
+      setHasConnectedAccount(false);
     } finally {
       setIsLoadingTokens(false);
     }
@@ -85,7 +85,8 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       setTokenRef(result.tokenRef);
       setShops(result.shops);
       setHasConnectedAccount(true);
-      setShowTokenInput(false);
+      setSelectedToken(token);
+      setNewToken(''); // Clear the input after successful validation
       
       // Ne plus sélectionner automatiquement même s'il n'y a qu'un seul shop
       // L'utilisateur doit toujours faire le choix explicitement
@@ -113,17 +114,20 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
     await validateTokenAndLoadShops(newToken);
   };
 
-  const handleSelectSavedToken = async (token: string) => {
-    setSelectedSavedToken(token);
+  const handleSelectToken = async (token: string) => {
     await validateTokenAndLoadShops(token);
   };
 
   const handleChangeAccount = () => {
-    setShowTokenInput(true);
     setShops([]);
     setSelectedShop(null);
     setTokenRef('');
+    setSelectedToken(null);
+    setHasConnectedAccount(false);
+    setNewToken('');
+    setTokenError('');
   };
+
 
   const handleSelectShop = (shopId: number) => {
     setSelectedShop(shopId);
@@ -150,7 +154,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       
       // Passer au step suivant
       onNext({
-        apiToken: selectedSavedToken || newToken,
+        apiToken: selectedToken || '',
         tokenRef,
         shops,
         shopId: selectedShop,
@@ -189,7 +193,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
         </div>
 
         {/* Section: Connect Printify (si pas de compte connecté) */}
-        {!hasConnectedAccount && showTokenInput && (
+        {!hasConnectedAccount && (
           <div className="mb-6 p-6 bg-gray-50 border border-gray-200 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Connect Your Printify Account</h3>
             
@@ -201,7 +205,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
                   {savedTokens.map((token) => (
                     <button
                       key={token.id}
-                      onClick={() => handleSelectSavedToken(token.token_ref)}
+                      onClick={() => handleSelectToken(token.token_ref)}
                       disabled={isValidatingToken}
                       className="w-full p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-left disabled:opacity-50"
                     >
@@ -358,6 +362,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
             </Button>
           )}
         </div>
+
       </div>
     </Card>
   );
