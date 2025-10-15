@@ -61,10 +61,10 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
       console.error('❌ Failed to fetch files or generate mockups:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load files';
       setError(errorMessage);
+      // Reset loading state on error to allow retry
+      loadingState.set(folderId, false);
     } finally {
       setIsLoading(false);
-      // Keep the loading state as true to prevent future calls for the same folder
-      // loadingState.set(folderId, true); // Already set above
     }
   }, [folderId, importId, shouldGenerateMockups]);
 
@@ -77,6 +77,15 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
 
   const handleNext = () => {
     onNext(currentFiles);
+  };
+
+  const handleTryAgain = () => {
+    // Reset loading state and error to allow retry
+    loadingState.set(folderId, false);
+    setError('');
+    setCurrentFiles([]);
+    // Trigger reload
+    loadFiles();
   };
 
   if (isLoading) {
@@ -131,7 +140,7 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
                 <h3 className="text-sm font-medium text-red-800">Error loading mockups</h3>
                 <p className="text-sm text-red-700 mt-1">{error}</p>
                 <Button
-                  onClick={loadFiles}
+                  onClick={handleTryAgain}
                   variant="secondary"
                   size="sm"
                   className="mt-2"
