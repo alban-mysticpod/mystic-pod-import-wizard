@@ -287,7 +287,7 @@ export async function pollMockupJobResult(
   mockupJobId: string,
   onProgress?: (status: string) => void
 ): Promise<any> {
-  const delays = [7000, 15000, 20000]; // 7s, 15s, 20s
+  const delays = [7000, 10000]; // 7s pour la première fois, puis 10s
   let delayIndex = 0;
   let attempts = 0;
   const maxAttempts = 10; // Maximum 10 attempts (timeout after ~3-4 minutes)
@@ -321,10 +321,10 @@ export async function pollMockupJobResult(
         throw new Error('Mockup job polling timeout - maximum attempts reached');
       }
       
-      // Calculate delay with exponential backoff
-      const currentDelay = delays[Math.min(delayIndex, delays.length - 1)];
-      if (delayIndex < delays.length - 1) {
-        delayIndex++;
+      // Calculate delay: 7s first time, then always 10s
+      const currentDelay = delayIndex === 0 ? delays[0] : delays[1];
+      if (delayIndex === 0) {
+        delayIndex = 1; // Après la première fois, on reste à l'index 1 (10s)
       }
       
       console.log(`⏳ Job still processing, waiting ${currentDelay}ms before next poll...`);
