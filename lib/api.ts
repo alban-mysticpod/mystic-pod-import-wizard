@@ -41,7 +41,7 @@ export async function validateDriveFolder(folderUrl: string): Promise<DriveValid
 export async function verifyPrintifyToken(apiToken: string, importId: string): Promise<{ id: string; token_ref: string }> {
   const userId = getUserId();
   
-  const response = await fetch('/api/verify-printify-token', {
+  const response = await fetch('/api/validate-token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ apiToken, userId, importId }),
