@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { fetchImages, generateMockupImages } from '@/lib/api';
+import { fetchImages, createMockupJob, pollMockupJobResult } from '@/lib/api';
 import { SupabaseFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Eye, Image as ImageIcon } from 'lucide-react';
@@ -39,9 +39,18 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
     try {
       // Générer les mockups si nécessaire (pour les presets sélectionnés)
       if (shouldGenerateMockups) {
-        console.log('🔄 Generating mockup images for preset selection, importId:', importId);
-        await generateMockupImages(importId);
-        console.log('✅ Mockup images generation triggered');
+        console.log('🔄 Creating mockup job for preset selection, importId:', importId);
+        
+        // Créer le job de mockup
+        const jobResult = await createMockupJob(importId);
+        console.log('✅ Mockup job created:', jobResult);
+        
+        if (jobResult.id) {
+          // Polling pour attendre les résultats (sans afficher le statut à l'utilisateur)
+          await pollMockupJobResult(importId, jobResult.id);
+          
+          console.log('✅ Mockup generation completed');
+        }
       }
 
       console.log('🖼️ Fetching files with mockups for folder:', folderId, 'importId:', importId);

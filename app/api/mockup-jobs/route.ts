@@ -9,17 +9,37 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { importId } = body;
+    const { importId, action, mockupJobId } = body;
 
     if (!importId) {
       return NextResponse.json({ error: 'importId is required' }, { status: 400 });
     }
 
-    const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/generate-mockup-images';
-    const payload = { userId, importId };
+    if (!action) {
+      return NextResponse.json({ error: 'action is required' }, { status: 400 });
+    }
 
-    console.log('🚀 Calling n8n webhook for generate-mockup-images:');
+    // Validate action parameter
+    if (!['create', 'getResult'].includes(action)) {
+      return NextResponse.json({ error: 'action must be "create" or "getResult"' }, { status: 400 });
+    }
+
+    // For getResult action, mockupJobId is required
+    if (action === 'getResult' && !mockupJobId) {
+      return NextResponse.json({ error: 'mockupJobId is required for getResult action' }, { status: 400 });
+    }
+
+    const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/mockup-jobs';
+    const payload = { 
+      userId, 
+      importId, 
+      action,
+      ...(mockupJobId && { mockupJobId })
+    };
+
+    console.log('🚀 Calling n8n webhook for mockup-jobs:');
     console.log('- URL:', webhookUrl);
+    console.log('- Action:', action);
     console.log('- Payload:', payload);
 
     const n8nResponse = await fetch(webhookUrl, {

@@ -129,6 +129,21 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
           helperText="Paste the full URL of your Google Drive folder containing your designs"
         />
 
+        <div className="flex justify-end space-x-3">
+          <Button
+            onClick={handleValidate}
+            loading={isLoading}
+            disabled={!url.trim()}
+          >
+            {validationResult ? 'Re-validate Folder' : 'Validate Folder'}
+          </Button>
+          {validationResult && (
+            <Button onClick={handleNext} variant="success">
+              Continue
+            </Button>
+          )}
+        </div>
+
         {validationResult && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
             <div className="flex items-start">
@@ -159,21 +174,6 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
             </div>
           </div>
         )}
-
-        <div className="flex justify-end space-x-3">
-          <Button
-            onClick={handleValidate}
-            loading={isLoading}
-            disabled={!url.trim()}
-          >
-            {validationResult ? 'Re-validate Folder' : 'Validate Folder'}
-          </Button>
-          {validationResult && (
-            <Button onClick={handleNext} variant="success">
-              Continue
-            </Button>
-          )}
-        </div>
       </div>
     </Card>
   );

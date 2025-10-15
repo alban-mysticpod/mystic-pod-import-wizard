@@ -187,19 +187,114 @@ export async function createPresetFromPrintifyProduct(productId: string, importI
   return response.json();
 }
 
-export async function generateMockupImages(importId: string): Promise<{ ok: true }> {
-  const userId = getUserId();
-  const response = await fetch('/api/generate-mockup-images', {
+// Create a mockup job
+export async function createMockupJob(importId: string): Promise<any> {
+  const response = await fetch('/api/mockup-jobs', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, importId }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ 
+      importId, 
+      action: 'create' 
+    }),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to generate mockup images: ${response.statusText}`);
+    throw new Error(`Failed to create mockup job: ${response.statusText}`);
   }
 
   return response.json();
+}
+
+// Get mockup job result
+export async function getMockupJobResult(importId: string, mockupJobId: string): Promise<any> {
+  const response = await fetch('/api/mockup-jobs', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ 
+      importId, 
+      action: 'getResult',
+      mockupJobId 
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get mockup job result: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Polling function with exponential backoff
+export async function pollMockupJobResult(
+  importId: string, 
+  mockupJobId: string,
+  onProgress?: (status: string) => void
+): Promise<any> {
+  const delays = [7000, 15000, 20000]; // 7s, 15s, 20s
+  let delayIndex = 0;
+  let attempts = 0;
+  const maxAttempts = 10; // Maximum 10 attempts (timeout after ~3-4 minutes)
+
+  const poll = async (): Promise<any> => {
+    attempts++;
+    
+    try {
+      console.log(`🔄 Polling mockup job result (attempt ${attempts}/${maxAttempts})`);
+      const result = await getMockupJobResult(importId, mockupJobId);
+      
+      // Check if job is completed
+      if (result.status === 'completed') {
+        console.log('✅ Mockup job completed successfully');
+        return result;
+      }
+      
+      // Check if job failed
+      if (result.status === 'failed' || result.status === 'error') {
+        console.error('❌ Mockup job failed:', result);
+        throw new Error(result.error || 'Mockup job failed');
+      }
+      
+      // Job is still in progress
+      if (onProgress) {
+        onProgress(result.status || 'processing');
+      }
+      
+      // Check if we've reached max attempts
+      if (attempts >= maxAttempts) {
+        throw new Error('Mockup job polling timeout - maximum attempts reached');
+      }
+      
+      // Calculate delay with exponential backoff
+      const currentDelay = delays[Math.min(delayIndex, delays.length - 1)];
+      if (delayIndex < delays.length - 1) {
+        delayIndex++;
+      }
+      
+      console.log(`⏳ Job still processing, waiting ${currentDelay}ms before next poll...`);
+      
+      // Wait before next poll
+      await new Promise(resolve => setTimeout(resolve, currentDelay));
+      
+      // Recursive call
+      return poll();
+      
+    } catch (error) {
+      console.error('❌ Error polling mockup job:', error);
+      throw error;
+    }
+  };
+
+  return poll();
+}
+
+// Legacy function for backward compatibility (will be removed)
+export async function generateMockupImages(importId: string): Promise<{ ok: true }> {
+  console.warn('⚠️ generateMockupImages is deprecated, use createMockupJob instead');
+  return createMockupJob(importId);
 }
 
 export interface UserStats {
