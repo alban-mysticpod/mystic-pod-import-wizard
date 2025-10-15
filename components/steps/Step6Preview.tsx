@@ -21,9 +21,18 @@ const loadingState = new Map<string, boolean>();
 
 export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step6Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
-  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  // Auto-select all files by default if files are provided
+  const initialSelection = new Set(files.length > 0 ? files.map(file => file.id) : []);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(initialSelection);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
+
+  // Log initial selection
+  useEffect(() => {
+    if (files.length > 0) {
+      console.log('🎯 Step6Preview initialized with', files.length, 'files, all auto-selected');
+    }
+  }, [files.length]);
 
   const loadFiles = useCallback(async () => {
     // Check global loading state to prevent double calls
@@ -41,6 +50,12 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
       const result = await fetchImages(folderId, importId);
       console.log('✅ Files fetched:', result);
       setCurrentFiles(result.files);
+      
+      // Auto-select all files after loading
+      if (result.files.length > 0) {
+        console.log('🎯 Auto-selecting all loaded files:', result.files.length);
+        setSelectedFiles(new Set(result.files.map(file => file.id)));
+      }
     } catch (err) {
       console.error('❌ Failed to fetch files:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load files';
@@ -58,6 +73,14 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
       loadFiles();
     }
   }, [folderId, files.length, loadFiles]);
+
+  // Auto-select all files when they are loaded or when component mounts with existing files
+  useEffect(() => {
+    if (currentFiles.length > 0 && selectedFiles.size === 0) {
+      console.log('🎯 Auto-selecting all files by default:', currentFiles.length);
+      setSelectedFiles(new Set(currentFiles.map(file => file.id)));
+    }
+  }, [currentFiles, selectedFiles.size]);
 
   const handleNext = () => {
     // Only pass selected files, or all files if none selected
