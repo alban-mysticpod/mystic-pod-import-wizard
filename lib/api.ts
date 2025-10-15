@@ -7,6 +7,7 @@ import {
   ImportToPrintifyResponse,
   ImportStatusEvent,
   ListPrintifyProductsResponse,
+  PrintifyShop,
 } from '@/types';
 import { getUserId } from '@/lib/user';
 
@@ -152,13 +153,14 @@ export async function listDriveFiles(folderId: string): Promise<DriveListRespons
   return response.json();
 }
 
+// Déclencher l'import vers Printify - retourne maintenant un record import
 export async function importToPrintify(
   folderId: string,
   tokenRef: string,
   shopId: number,
   importId: string
-): Promise<ImportToPrintifyResponse> {
-  const userId = getUserId(); // Utiliser l'ID utilisateur existant
+): Promise<{ id: string; status: string }> {
+  const userId = getUserId();
   
   const response = await fetch(API_BASE.importToPrintify, {
     method: 'POST',
@@ -167,10 +169,102 @@ export async function importToPrintify(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to import to Printify: ${response.statusText}`);
+    throw new Error(`Failed to start import to Printify: ${response.statusText}`);
   }
 
   return response.json();
+}
+
+// Récupérer le statut d'un import
+export async function getImportStatus(importId: string): Promise<any> {
+  const userId = getUserId();
+  
+  const response = await fetch('/api/get-import-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ importId, userId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get import status: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Polling du statut d'import avec les mêmes délais que les mockups
+export async function pollImportStatus(
+  importId: string,
+  onProgress?: (status: { status: string; processed: number; total: number; successful: number; failed: number }) => void
+): Promise<any> {
+  const delays = [7000, 10000]; // 7s pour la première fois, puis 10s
+  let delayIndex = 0;
+  let attempts = 0;
+  const maxAttempts = 10; // Maximum 10 attempts
+
+  const poll = async (): Promise<any> => {
+    attempts++;
+    
+    try {
+      console.log(`🔄 Polling import status (attempt ${attempts}/${maxAttempts})`);
+      const result = await getImportStatus(importId);
+      
+      // Le résultat est un array, on prend le premier élément
+      const importRecord = Array.isArray(result) ? result[0] : result;
+      
+      if (!importRecord) {
+        throw new Error('No import record found');
+      }
+      
+      // Check if import is completed
+      if (importRecord.status === 'completed') {
+        console.log('✅ Import completed successfully');
+        return importRecord;
+      }
+      
+      // Check if import failed
+      if (importRecord.status === 'failed' || importRecord.status === 'error') {
+        console.error('❌ Import failed:', importRecord);
+        throw new Error(importRecord.error_message || 'Import failed');
+      }
+      
+      // Import is still in progress
+      if (onProgress) {
+        onProgress({
+          status: importRecord.status || 'processing',
+          processed: importRecord.processed || 0,
+          total: importRecord.total || 0,
+          successful: importRecord.successful || 0,
+          failed: importRecord.failed || 0
+        });
+      }
+      
+      // Check if we've reached max attempts
+      if (attempts >= maxAttempts) {
+        throw new Error('Import polling timeout - maximum attempts reached');
+      }
+      
+      // Calculate delay: 7s first time, then always 10s
+      const currentDelay = delayIndex === 0 ? delays[0] : delays[1];
+      if (delayIndex === 0) {
+        delayIndex = 1; // Après la première fois, on reste à l'index 1 (10s)
+      }
+      
+      console.log(`⏳ Import still processing, waiting ${currentDelay}ms before next poll...`);
+      
+      // Wait before next poll
+      await new Promise(resolve => setTimeout(resolve, currentDelay));
+      
+      // Recursive call
+      return poll();
+      
+    } catch (error) {
+      console.error('❌ Error polling import status:', error);
+      throw error;
+    }
+  };
+
+  return poll();
 }
 
 export async function assignPreset(blueprintId: number, importId: string, presetId?: string): Promise<{ ok: true }> {

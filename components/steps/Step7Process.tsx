@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { importToPrintify } from '@/lib/api';
+import { importToPrintify, pollImportStatus } from '@/lib/api';
 import { CheckCircle, XCircle, ExternalLink, RotateCcw, Package, ArrowLeft } from 'lucide-react';
 
 interface Step7Props {
@@ -25,6 +25,7 @@ export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, 
   const [currentState, setCurrentState] = useState<ImportState>('importing');
   const [error, setError] = useState('');
   const [importResult, setImportResult] = useState<any>(null);
+  const [importProgress, setImportProgress] = useState({ processed: 0, total: 0, successful: 0, failed: 0 });
 
   const startImport = useCallback(async () => {
     // Create a unique key for this import session
@@ -39,13 +40,23 @@ export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, 
     importState.set(importKey, true);
     setCurrentState('importing');
     setError('');
+    setImportProgress({ processed: 0, total: 0, successful: 0, failed: 0 });
 
     try {
       console.log('🚀 Starting import to Printify... importId:', importId);
-      const result = await importToPrintify(folderId, tokenRef, shopId, importId);
-      console.log('✅ Import completed:', result);
       
-      setImportResult(result);
+      // Étape 1: Déclencher l'import (retourne juste un record import avec ID)
+      const importRecord = await importToPrintify(folderId, tokenRef, shopId, importId);
+      console.log('✅ Import job started:', importRecord);
+      
+      // Étape 2: Polling du statut avec progress updates
+      const finalResult = await pollImportStatus(importId, (progress) => {
+        console.log('📊 Import progress:', progress);
+        setImportProgress(progress);
+      });
+      
+      console.log('✅ Import completed:', finalResult);
+      setImportResult(finalResult);
       setCurrentState('success');
     } catch (err) {
       console.error('❌ Import failed:', err);
@@ -77,6 +88,30 @@ export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, 
             We're uploading {fileCount} files to your Printify shop. This may take a few minutes...
           </p>
           
+          {/* Progress information */}
+          {importProgress.total > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
+              <div className="text-sm text-blue-800 space-y-2">
+                <div className="flex justify-between">
+                  <span>Progress:</span>
+                  <span className="font-medium">{importProgress.processed} / {importProgress.total}</span>
+                </div>
+                {importProgress.successful > 0 && (
+                  <div className="flex justify-between">
+                    <span>Successful:</span>
+                    <span className="font-medium text-green-600">{importProgress.successful}</span>
+                  </div>
+                )}
+                {importProgress.failed > 0 && (
+                  <div className="flex justify-between">
+                    <span>Failed:</span>
+                    <span className="font-medium text-red-600">{importProgress.failed}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           {/* Loading animation */}
           <div className="flex justify-center mb-6">
             <div className="flex space-x-2">
@@ -105,19 +140,27 @@ export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">🎉 Import Successful!</h2>
           
           <p className="text-gray-600 mb-6">
-            Your {fileCount} design files have been successfully imported to your Printify shop.
+            Your designs have been successfully imported to your Printify shop.
           </p>
 
-          {importResult?.importedCount && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-green-800">
-                <strong>{importResult.importedCount}</strong> files imported successfully
-              </p>
-              {importResult.message && (
-                <p className="text-xs text-green-700 mt-1">{importResult.message}</p>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="text-sm text-green-800 space-y-2">
+              <div className="flex justify-between">
+                <span>Successfully imported:</span>
+                <span className="font-bold text-lg text-green-600">{importResult?.successful || 0}</span>
+              </div>
+              {importResult?.failed > 0 && (
+                <div className="flex justify-between">
+                  <span>Failed:</span>
+                  <span className="font-medium text-red-600">{importResult.failed}</span>
+                </div>
               )}
+              <div className="flex justify-between">
+                <span>Total processed:</span>
+                <span className="font-medium">{importResult?.processed || 0}</span>
+              </div>
             </div>
-          )}
+          </div>
 
           <div className="space-y-4">
             <Button
