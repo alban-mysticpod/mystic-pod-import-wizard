@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PrintifyProductModal } from '@/components/PrintifyProductModal';
-import { Blueprint, Preset, PrintifyProduct } from '@/types';
-import { assignPreset } from '@/lib/api';
-import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink } from 'lucide-react';
+import { Blueprint, Preset, PrintifyProduct, PrintProvider } from '@/types';
+import { assignPreset, selectPrintProvider } from '@/lib/api';
+import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink, Printer, MapPin } from 'lucide-react';
 
 interface Step3Props {
   selectedBlueprint: Blueprint | null;
@@ -21,6 +21,9 @@ interface Step3Props {
 // Global state to prevent double loading
 const loadingState = new Map<string, boolean>();
 
+// MVP Feature Flag: Disable manual configuration for MVP
+const ENABLE_MANUAL_CONFIGURATION = false;
+
 export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, onNext, onPresetNext, onPrintifyProductNext, onBack }: Step3Props) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
@@ -30,6 +33,12 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
   const [isLoadingPresets, setIsLoadingPresets] = useState(true);
   const [error, setError] = useState('');
   const [showPrintifyModal, setShowPrintifyModal] = useState(false);
+  
+  // Print Provider states (integrated from Step 4)
+  const [printProviders, setPrintProviders] = useState<PrintProvider[]>([]);
+  const [selectedPrintProvider, setSelectedPrintProvider] = useState<number | null>(null);
+  const [isLoadingPrintProviders, setIsLoadingPrintProviders] = useState(false);
+  const [showPrintProviders, setShowPrintProviders] = useState(false);
 
   const loadBlueprints = useCallback(async () => {
     const loadKey = 'blueprints-printify';
@@ -96,9 +105,54 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
     loadPresets();
   }, [loadBlueprints, loadPresets]);
 
+  // Load print providers when a blueprint is selected (integrated from Step 4)
+  const loadPrintProviders = useCallback(async (blueprint: Blueprint) => {
+    const loadKey = `print-providers-${blueprint.id}`;
+    
+    if (loadingState.get(loadKey)) {
+      console.log('🛑 Already loading print providers - skipping duplicate call');
+      return;
+    }
+
+    loadingState.set(loadKey, true);
+    setIsLoadingPrintProviders(true);
+    setError('');
+
+    try {
+      console.log('🖨️ Fetching print providers for blueprint:', blueprint.id);
+      const response = await fetch(`/api/print-providers?blueprintId=${blueprint.id}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch print providers');
+      }
+
+      const data = await response.json();
+      console.log('✅ Print providers loaded:', data);
+      
+      if (Array.isArray(data)) {
+        setPrintProviders(data);
+        setShowPrintProviders(true);
+      } else {
+        console.error('❌ Invalid print providers data format:', data);
+        setError('Invalid print providers data format');
+      }
+    } catch (err) {
+      console.error('❌ Failed to load print providers:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load print providers';
+      setError(errorMessage);
+    } finally {
+      setIsLoadingPrintProviders(false);
+    }
+  }, []);
+
   const handleSelect = (blueprint: Blueprint) => {
     setSelected(blueprint);
     setSelectedPreset(null); // Désélectionner le preset si on sélectionne un blueprint
+    
+    // Load print providers for manual configuration (if enabled)
+    if (ENABLE_MANUAL_CONFIGURATION) {
+      loadPrintProviders(blueprint);
+    }
   };
 
   const handlePresetSelect = (preset: Preset) => {
@@ -129,11 +183,24 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
       return;
     }
 
+    // For manual configuration, check if print provider is selected
+    if (ENABLE_MANUAL_CONFIGURATION && !selectedPrintProvider) {
+      setError('Please select a print provider');
+      return;
+    }
+
     try {
       // Appeler le webhook assign-preset quand un blueprint est sélectionné
       console.log('🎯 Assigning preset for blueprint:', selected.id, 'importId:', importId);
       await assignPreset(selected.id, importId);
       console.log('✅ Preset assigned successfully');
+      
+      // If manual configuration is enabled, also call select print provider
+      if (ENABLE_MANUAL_CONFIGURATION && selectedPrintProvider) {
+        console.log('🖨️ Selecting print provider:', selectedPrintProvider, 'importId:', importId);
+        await selectPrintProvider(selectedPrintProvider, importId);
+        console.log('✅ Print provider selected successfully');
+      }
       
       onNext(selected);
     } catch (err) {
@@ -178,13 +245,23 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
           {hasPresets || tokenRef ? 'Select Configuration' : 'Choose a Blueprint'}
         </h2>
         <p className="text-gray-600 mb-6">
-          {hasPresets && tokenRef 
-            ? 'Choose from your saved presets, import from Printify, or configure manually'
-            : hasPresets 
-              ? 'Use your saved presets or configure manually'
-              : tokenRef 
-                ? 'Import from Printify or configure manually'
-                : 'Select the product template you want to use for your designs'
+          {ENABLE_MANUAL_CONFIGURATION 
+            ? (hasPresets && tokenRef 
+                ? 'Choose from your saved presets, import from Printify, or configure manually'
+                : hasPresets 
+                  ? 'Use your saved presets or configure manually'
+                  : tokenRef 
+                    ? 'Import from Printify or configure manually'
+                    : 'Select the product template you want to use for your designs'
+              )
+            : (hasPresets && tokenRef 
+                ? 'Choose from your saved presets or import from Printify'
+                : hasPresets 
+                  ? 'Use your saved presets'
+                  : tokenRef 
+                    ? 'Import from Printify'
+                    : 'Configuration options will be available soon'
+              )
           }
         </p>
 
@@ -298,12 +375,13 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
           </>
         )}
 
-        {/* Manual Blueprint Selection Section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Package className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Choose a Blueprint</h2>
-          </div>
+        {/* Manual Blueprint Selection Section - Hidden for MVP */}
+        {ENABLE_MANUAL_CONFIGURATION && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Package className="w-5 h-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Choose a Blueprint</h2>
+            </div>
           <p className="text-sm text-gray-600 mb-4">
             {!isLoadingPresets && presets.length > 0 
               ? 'Select a product template and configure it step by step'
@@ -353,7 +431,61 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
             </button>
             ))}
           </div>
-        </div>
+          </div>
+        )}
+
+        {/* Print Provider Selection Section - Integrated from Step 4 */}
+        {ENABLE_MANUAL_CONFIGURATION && showPrintProviders && selected && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Printer className="w-5 h-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Choose Print Provider</h2>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Select the print provider for your {selected.title}
+            </p>
+
+            {isLoadingPrintProviders ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-gray-600 mt-2">Loading print providers...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {printProviders.map((provider) => (
+                  <button
+                    key={provider.id}
+                    onClick={() => setSelectedPrintProvider(provider.id)}
+                    className={`relative p-4 border-2 rounded-lg transition-all hover:shadow-lg ${
+                      selectedPrintProvider === provider.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {/* Selected Checkmark */}
+                    {selectedPrintProvider === provider.id && (
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+
+                    {/* Provider Info */}
+                    <div className="text-left">
+                      <h3 className="font-semibold text-gray-900 mb-1">{provider.title}</h3>
+                      <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+                        <MapPin className="w-3 h-3" />
+                        <span>{provider.location}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        ID: {provider.id}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Selected Item Details */}
         {selectedPreset && (
@@ -370,7 +502,7 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
         )}
 
 
-        {selected && (
+        {ENABLE_MANUAL_CONFIGURATION && selected && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h3 className="font-semibold text-gray-900 mb-2">Selected Blueprint: {selected.title}</h3>
             <p className="text-sm text-gray-600 line-clamp-3">
@@ -398,12 +530,15 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
             onClick={handleNext}
             variant="primary"
             size="lg"
-            disabled={!selected && !selectedPreset}
+            disabled={ENABLE_MANUAL_CONFIGURATION 
+              ? (!selectedPreset && (!selected || !selectedPrintProvider))
+              : !selectedPreset
+            }
             className="flex-1"
           >
             {selectedPreset 
               ? `Continue with Preset: ${selectedPreset.name}` 
-              : selected 
+              : ENABLE_MANUAL_CONFIGURATION && selected && selectedPrintProvider
                 ? `Continue with ${selected.title}`
                 : 'Continue with Selection'
             }

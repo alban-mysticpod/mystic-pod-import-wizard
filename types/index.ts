@@ -226,8 +226,8 @@ export const STEPS = [
   { id: 1, title: 'Google Drive Folder', description: 'Share your design folder' },
   { id: 2, title: 'Choose Shop', description: 'Select your Printify shop' },
   { id: 3, title: 'Choose Blueprint', description: 'Select product template' },
-  { id: 4, title: 'Choose Print Provider', description: 'Select print provider' },
-  { id: 5, title: 'Preview Mockups', description: 'See how designs will look' },
-  { id: 6, title: 'Preview Designs', description: 'Review your designs' },
-  { id: 7, title: 'Import & Process', description: 'Import to Printify' },
+  // Step 4 (Choose Print Provider) is now integrated into Step 3 for MVP
+  { id: 4, title: 'Preview Mockups', description: 'See how designs will look' },
+  { id: 5, title: 'Preview Designs', description: 'Review your designs' },
+  { id: 6, title: 'Import & Process', description: 'Import to Printify' },
 ] as const;
