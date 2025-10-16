@@ -19,6 +19,9 @@ interface Step6Props {
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
+// MVP Feature Flag: Disable file selection for MVP
+const ENABLE_FILE_SELECTION = false;
+
 export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step6Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   // Auto-select all files by default if files are provided
@@ -83,11 +86,17 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
   }, [currentFiles, selectedFiles.size]);
 
   const handleNext = () => {
-    // Only pass selected files, or all files if none selected
-    const filesToProcess = selectedFiles.size > 0 
-      ? currentFiles.filter(file => selectedFiles.has(file.id))
-      : currentFiles;
-    onNext(filesToProcess);
+    // For MVP, always pass all files (no selection)
+    if (ENABLE_FILE_SELECTION) {
+      // Only pass selected files, or all files if none selected
+      const filesToProcess = selectedFiles.size > 0 
+        ? currentFiles.filter(file => selectedFiles.has(file.id))
+        : currentFiles;
+      onNext(filesToProcess);
+    } else {
+      // MVP: Import all files
+      onNext(currentFiles);
+    }
   };
 
   const toggleFileSelection = (fileId: string) => {
@@ -159,43 +168,57 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
 
         {currentFiles.length > 0 && (
           <>
-            {/* Selection Controls */}
-            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center gap-4">
-                <h3 className="font-medium text-gray-900">
-                  {selectedFiles.size > 0 
-                    ? `${selectedFiles.size} of ${currentFiles.length} selected`
-                    : `${currentFiles.length} designs ready`
-                  }
-                </h3>
-                {selectedFiles.size > 0 && (
+            {/* Selection Controls - Hidden for MVP */}
+            {ENABLE_FILE_SELECTION && (
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="font-medium text-gray-900">
+                    {selectedFiles.size > 0 
+                      ? `${selectedFiles.size} of ${currentFiles.length} selected`
+                      : `${currentFiles.length} designs ready`
+                    }
+                  </h3>
+                  {selectedFiles.size > 0 && (
+                    <Button
+                      onClick={clearSelection}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      Clear Selection
+                    </Button>
+                  )}
+                </div>
+                <div className="flex gap-2">
                   <Button
-                    onClick={clearSelection}
+                    onClick={selectAllFiles}
                     variant="secondary"
                     size="sm"
                   >
-                    Clear Selection
+                    Select All
                   </Button>
-                )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="inline-flex items-center gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Bulk Actions
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={selectAllFiles}
-                  variant="secondary"
-                  size="sm"
-                >
-                  Select All
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="inline-flex items-center gap-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  Bulk Actions
-                </Button>
+            )}
+
+            {/* MVP: Simple header without selection controls */}
+            {!ENABLE_FILE_SELECTION && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900">
+                  {currentFiles.length} designs ready to import
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  All designs will be imported to your Printify shop
+                </p>
               </div>
-            </div>
+            )}
 
             {/* Design Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
@@ -206,23 +229,29 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
                 return (
                   <div
                     key={file.id || index}
-                    className={`relative bg-white rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg ${
-                      isSelected 
-                        ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
-                        : 'border-gray-200 hover:border-gray-300'
+                    className={`relative bg-white rounded-lg border-2 transition-all ${
+                      ENABLE_FILE_SELECTION
+                        ? `cursor-pointer hover:shadow-lg ${
+                            isSelected 
+                              ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`
+                        : 'border-gray-200'
                     }`}
-                    onClick={() => toggleFileSelection(file.id)}
+                    onClick={ENABLE_FILE_SELECTION ? () => toggleFileSelection(file.id) : undefined}
                   >
-                    {/* Selection Checkbox */}
-                    <div className="absolute top-2 right-2 z-10">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                        isSelected 
-                          ? 'bg-blue-500 border-blue-500 text-white' 
-                          : 'bg-white border-gray-300'
-                      }`}>
-                        {isSelected && <Check className="w-4 h-4" />}
+                    {/* Selection Checkbox - Hidden for MVP */}
+                    {ENABLE_FILE_SELECTION && (
+                      <div className="absolute top-2 right-2 z-10">
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          isSelected 
+                            ? 'bg-blue-500 border-blue-500 text-white' 
+                            : 'bg-white border-gray-300'
+                        }`}>
+                          {isSelected && <Check className="w-4 h-4" />}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Image Preview */}
                     <div className="aspect-square rounded-t-lg bg-gray-100 relative overflow-hidden">
@@ -276,8 +305,11 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
                 <div className="text-sm">
                   <p className="font-medium text-blue-900 mb-1">Ready to import:</p>
                   <p className="text-blue-700">
-                    {selectedFiles.size > 0 
-                      ? `${formatFileCount(selectedFiles.size)} selected file${selectedFiles.size !== 1 ? 's' : ''}`
+                    {ENABLE_FILE_SELECTION 
+                      ? (selectedFiles.size > 0 
+                          ? `${formatFileCount(selectedFiles.size)} selected file${selectedFiles.size !== 1 ? 's' : ''}`
+                          : formatFileCount(currentFiles.length)
+                        )
                       : formatFileCount(currentFiles.length)
                     } will be uploaded to your Printify shop.
                     This process may take a few minutes depending on file sizes.
@@ -329,7 +361,10 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
             variant="success"
             size="lg"
           >
-            Import {selectedFiles.size > 0 ? selectedFiles.size : currentFiles.length} {selectedFiles.size > 0 ? 'selected' : ''} files to Printify
+            {ENABLE_FILE_SELECTION 
+              ? `Import ${selectedFiles.size > 0 ? selectedFiles.size : currentFiles.length} ${selectedFiles.size > 0 ? 'selected' : ''} files to Printify`
+              : `Import ${currentFiles.length} files to Printify`
+            }
           </Button>
         </div>
       </div>
