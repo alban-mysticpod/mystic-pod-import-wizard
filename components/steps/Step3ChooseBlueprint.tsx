@@ -318,6 +318,20 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
                   </button>
                 ))}
               </div>
+
+              {/* Continue button for presets - positioned right after preset selection */}
+              {selectedPreset && (
+                <div className="mt-4">
+                  <Button
+                    onClick={handleNext}
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                  >
+                    Continue with Preset: {selectedPreset.name}
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* OR Divider - Only show if there are more sections below */}
@@ -361,17 +375,7 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
               </div>
             </div>
 
-            {/* OR Divider - Only show if there are blueprints below */}
-            {blueprints.length > 0 && (
-              <div className="relative mb-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
-                </div>
-              </div>
-            )}
+            {/* OR Divider removed - no more sections below for MVP */}
           </>
         )}
 
@@ -518,31 +522,14 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex justify-between gap-4">
+        {/* Action Buttons - Only Back button, Continue is now in preset section */}
+        <div className="flex justify-start gap-4">
           {onBack && (
             <Button onClick={onBack} variant="secondary" size="lg" className="inline-flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
           )}
-          <Button
-            onClick={handleNext}
-            variant="primary"
-            size="lg"
-            disabled={ENABLE_MANUAL_CONFIGURATION 
-              ? (!selectedPreset && (!selected || !selectedPrintProvider))
-              : !selectedPreset
-            }
-            className="flex-1"
-          >
-            {selectedPreset 
-              ? `Continue with Preset: ${selectedPreset.name}` 
-              : ENABLE_MANUAL_CONFIGURATION && selected && selectedPrintProvider
-                ? `Continue with ${selected.title}`
-                : 'Continue with Selection'
-            }
-          </Button>
         </div>
       </div>
 
