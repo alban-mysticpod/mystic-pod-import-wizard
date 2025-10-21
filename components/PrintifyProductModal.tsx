@@ -41,6 +41,15 @@ export function PrintifyProductModal({
   }, [isOpen, tokenRef, importId]);
 
   const loadProducts = async (page: number = 1, append: boolean = false) => {
+    console.log('🔄 PrintifyModal: loadProducts called', {
+      page,
+      append,
+      tokenRef: tokenRef?.substring(0, 10) + '...',
+      importId,
+      isOpen,
+      currentProductsCount: products.length
+    });
+    
     if (append) {
       setIsLoadingMore(true);
     } else {

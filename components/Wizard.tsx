@@ -10,6 +10,7 @@ import { Step5Mockups as Step4Mockups } from './steps/Step5Mockups';
 import { Step6Preview as Step5Preview } from './steps/Step6Preview';
 import { Step7Process as Step6Process } from './steps/Step7Process';
 import { WizardState, PrintifyShop, SupabaseFile, Blueprint, Preset, PrintifyProduct } from '@/types';
+import { clearAllGlobalCaches } from '@/lib/cache-utils';
 
 const initialState: WizardState = {
   currentStep: 1,
@@ -44,11 +45,23 @@ export function Wizard() {
 
   // Generic back handler
   const handleBack = useCallback(() => {
+    console.log('🔙 BACK BUTTON: Going back from step', state.currentStep, 'to', state.currentStep - 1);
+    console.log('🔙 BACK BUTTON: Current state:', {
+      importId: state.importId,
+      tokenRef: state.tokenRef,
+      selectedShopId: state.selectedShopId,
+      selectedBlueprint: state.selectedBlueprint?.id,
+      selectedPreset: state.selectedPreset?.id
+    });
+    
+    // Clear all global caches to prevent stale state issues
+    clearAllGlobalCaches();
+    
     setState(prev => ({
       ...prev,
       currentStep: prev.currentStep - 1,
     }));
-  }, []);
+  }, [state.currentStep, state.importId, state.tokenRef, state.selectedShopId, state.selectedBlueprint, state.selectedPreset]);
 
   const handleStep1Next = useCallback((data: {
     folderUrl: string;

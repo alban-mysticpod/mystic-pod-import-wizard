@@ -9,6 +9,7 @@ import { PrintifyShop, ApiToken } from '@/types';
 import { Store, CheckCircle, ExternalLink, ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { getUserId } from '@/lib/user';
 import { cn } from '@/lib/utils';
+import { registerGlobalCache } from '@/lib/cache-utils';
 
 interface Step2Props {
   selectedShopId: number | null;
@@ -40,7 +41,19 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
 
   // Charger les tokens sauvegardés au montage
   useEffect(() => {
-    console.log('🔄 useEffect triggered - loading saved tokens');
+    console.log('🔄 Step2 MOUNT: useEffect triggered - loading saved tokens');
+    console.log('🔄 Step2 MOUNT: validationInProgress cache size:', validationInProgress.current.size);
+    console.log('🔄 Step2 MOUNT: validationInProgress cache contents:', Array.from(validationInProgress.current));
+    console.log('🔄 Step2 MOUNT: Current states:', {
+      hasConnectedAccount,
+      selectedToken: selectedToken?.substring(0, 10) + '...' || 'null',
+      isValidatingToken,
+      importId
+    });
+    
+    // Register the validation cache with global cache manager
+    registerGlobalCache('step2ValidationInProgress', validationInProgress.current);
+    
     loadSavedTokens();
   }, []);
 
@@ -88,7 +101,16 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
 
     // Protection robuste contre React StrictMode et appels multiples
     if (validationInProgress.current.has(tokenKey) || isValidatingToken || (selectedToken === token && hasConnectedAccount)) {
-      console.log('🛑 Skipping validation - already in progress or completed:', token.substring(0, 10) + '...');
+      console.log('🛑 VALIDATION BLOCKED:', {
+        token: token.substring(0, 10) + '...',
+        reasons: {
+          inProgressCache: validationInProgress.current.has(tokenKey),
+          isValidatingToken,
+          alreadyValidated: selectedToken === token && hasConnectedAccount
+        },
+        cacheContents: Array.from(validationInProgress.current),
+        currentStates: { selectedToken: selectedToken?.substring(0, 10) + '...', hasConnectedAccount }
+      });
       return;
     }
 
