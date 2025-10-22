@@ -10,7 +10,7 @@ import { Step5Mockups as Step4Mockups } from './steps/Step5Mockups';
 import { Step6Preview as Step5Preview } from './steps/Step6Preview';
 import { Step7Process as Step6Process } from './steps/Step7Process';
 import { WizardState, PrintifyShop, SupabaseFile, Blueprint, Preset, PrintifyProduct } from '@/types';
-import { clearAllGlobalCaches } from '@/lib/cache-utils';
+import { clearBlockingCaches } from '@/lib/cache-utils';
 
 const initialState: WizardState = {
   currentStep: 1,
@@ -54,8 +54,8 @@ export function Wizard() {
       selectedPreset: state.selectedPreset?.id
     });
     
-    // Clear all global caches to prevent stale state issues
-    clearAllGlobalCaches();
+    // Clear only blocking caches to prevent stale state issues (preserves UX)
+    clearBlockingCaches();
     
     setState(prev => ({
       ...prev,

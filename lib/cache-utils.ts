@@ -9,9 +9,27 @@ export const globalCaches = {
   step2ValidationInProgress: null as Set<string> | null,
 };
 
-// Function to clear all global caches
-export function clearAllGlobalCaches() {
-  console.log('🧹 CACHE CLEANUP: Clearing all global caches');
+// Function to clear only blocking caches (preserves UX-positive data)
+export function clearBlockingCaches() {
+  console.log('🧹 SMART CLEANUP: Clearing only blocking caches (preserving UX data)');
+  
+  const clearedCaches: string[] = [];
+  
+  // Clear validation cache - this blocks new requests
+  if (globalCaches.step2ValidationInProgress) {
+    const size = globalCaches.step2ValidationInProgress.size;
+    globalCaches.step2ValidationInProgress.clear();
+    clearedCaches.push(`Step2Validation (${size} items)`);
+    console.log('🧹 CLEARED: Validation cache that was blocking requests');
+  }
+  
+  console.log('🧹 SMART CLEANUP: Cleared blocking caches:', clearedCaches.join(', '));
+  console.log('✅ PRESERVED: User selections, connection states, and loaded data for better UX');
+}
+
+// Function to clear loading state caches (only when really needed)
+export function clearLoadingCaches() {
+  console.log('🧹 LOADING CLEANUP: Clearing loading state caches');
   
   const clearedCaches: string[] = [];
   
@@ -39,13 +57,13 @@ export function clearAllGlobalCaches() {
     clearedCaches.push(`Step4PrintProvider (${size} items)`);
   }
   
-  if (globalCaches.step2ValidationInProgress) {
-    const size = globalCaches.step2ValidationInProgress.size;
-    globalCaches.step2ValidationInProgress.clear();
-    clearedCaches.push(`Step2Validation (${size} items)`);
-  }
-  
-  console.log('🧹 CACHE CLEANUP: Cleared caches:', clearedCaches.join(', '));
+  console.log('🧹 LOADING CLEANUP: Cleared loading caches:', clearedCaches.join(', '));
+}
+
+// Legacy function for backward compatibility (now calls smart cleanup)
+export function clearAllGlobalCaches() {
+  console.log('🔄 LEGACY: clearAllGlobalCaches called, using smart cleanup instead');
+  clearBlockingCaches();
 }
 
 // Function to register a cache with the global cache manager

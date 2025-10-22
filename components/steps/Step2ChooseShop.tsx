@@ -9,7 +9,7 @@ import { PrintifyShop, ApiToken } from '@/types';
 import { Store, CheckCircle, ExternalLink, ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { getUserId } from '@/lib/user';
 import { cn } from '@/lib/utils';
-import { registerGlobalCache } from '@/lib/cache-utils';
+import { registerGlobalCache, clearLoadingCaches } from '@/lib/cache-utils';
 
 interface Step2Props {
   selectedShopId: number | null;
@@ -57,6 +57,12 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
     loadSavedTokens();
   }, []);
 
+  // Nettoyer les caches de chargement seulement quand importId change (nouveau flow)
+  useEffect(() => {
+    console.log('🔄 Step2 IMPORT_ID_CHANGE: importId changed, clearing loading caches for new flow');
+    clearLoadingCaches();
+  }, [importId]);
+
   const loadSavedTokens = async () => {
     setIsLoadingTokens(true);
     try {
@@ -99,17 +105,25 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       timestamp: new Date().toISOString()
     });
 
-    // Protection robuste contre React StrictMode et appels multiples
-    if (validationInProgress.current.has(tokenKey) || isValidatingToken || (selectedToken === token && hasConnectedAccount)) {
-      console.log('🛑 VALIDATION BLOCKED:', {
+    // Protection intelligente: évite les doublons mais permet les re-validations légitimes
+    if (validationInProgress.current.has(tokenKey) || isValidatingToken) {
+      console.log('🛑 VALIDATION BLOCKED (in progress):', {
         token: token.substring(0, 10) + '...',
         reasons: {
           inProgressCache: validationInProgress.current.has(tokenKey),
-          isValidatingToken,
-          alreadyValidated: selectedToken === token && hasConnectedAccount
+          isValidatingToken
         },
-        cacheContents: Array.from(validationInProgress.current),
-        currentStates: { selectedToken: selectedToken?.substring(0, 10) + '...', hasConnectedAccount }
+        cacheContents: Array.from(validationInProgress.current)
+      });
+      return;
+    }
+
+    // Si le token est déjà validé ET qu'on a des shops, pas besoin de re-valider
+    if (selectedToken === token && hasConnectedAccount && shops.length > 0) {
+      console.log('✅ VALIDATION SKIPPED (already valid):', {
+        token: token.substring(0, 10) + '...',
+        shopsCount: shops.length,
+        message: 'Token already validated with shops loaded - preserving UX'
       });
       return;
     }
