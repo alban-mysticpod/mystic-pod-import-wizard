@@ -96,7 +96,28 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
       >
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Creating mockup previews...</p>
+          <p className="text-gray-600 mt-4 mb-6">Creating mockup previews...</p>
+          <p className="text-sm text-gray-500 mb-6">
+            Mockups are optional - you can skip this step if you prefer to proceed directly to import.
+          </p>
+          
+          {/* Skip button during loading */}
+          <div className="flex justify-center gap-3">
+            {onBack && (
+              <Button onClick={onBack} variant="secondary" className="inline-flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+            )}
+            <Button 
+              onClick={() => onNext(files)} 
+              variant="outline"
+              className="inline-flex items-center gap-2"
+            >
+              Skip Mockups
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </Card>
     );
@@ -136,17 +157,30 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               </div>
-              <div className="ml-3">
+              <div className="ml-3 flex-1">
                 <h3 className="text-sm font-medium text-red-800">Error loading mockups</h3>
                 <p className="text-sm text-red-700 mt-1">{error}</p>
-                <Button
-                  onClick={handleTryAgain}
-                  variant="secondary"
-                  size="sm"
-                  className="mt-2"
-                >
-                  Try Again
-                </Button>
+                <p className="text-xs text-red-600 mt-2">
+                  Don't worry - mockups are optional. You can skip this step and proceed directly to import.
+                </p>
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    onClick={handleTryAgain}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Try Again
+                  </Button>
+                  <Button
+                    onClick={() => onNext(files)}
+                    variant="outline"
+                    size="sm"
+                    className="inline-flex items-center gap-1"
+                  >
+                    Skip Mockups
+                    <ArrowRight className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -290,14 +324,25 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
               </Button>
             )}
           </div>
-          <Button
-            onClick={handleNext}
-            disabled={currentFiles.length === 0 || isLoading}
-            variant="success"
-            size="lg"
-          >
-            Continue to Final Preview
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => onNext(files)}
+              variant="outline"
+              size="lg"
+              className="inline-flex items-center gap-2"
+            >
+              Skip Mockups
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={handleNext}
+              disabled={currentFiles.length === 0 || isLoading}
+              variant="success"
+              size="lg"
+            >
+              Continue to Final Preview
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
