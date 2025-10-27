@@ -16,6 +16,7 @@ interface EditTokenModalProps {
 export function EditTokenModal({ isOpen, onClose, token, onTokenUpdated }: EditTokenModalProps) {
   const [name, setName] = useState(token.name || '');
   const [apiToken, setApiToken] = useState(token.token_ref);
+  const [isDefault, setIsDefault] = useState(token.is_default || false);
   const [showToken, setShowToken] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -56,6 +57,7 @@ export function EditTokenModal({ isOpen, onClose, token, onTokenUpdated }: EditT
           userId,
           name,
           token_ref: apiToken,
+          is_default: isDefault,
         }),
       });
 
@@ -79,6 +81,7 @@ export function EditTokenModal({ isOpen, onClose, token, onTokenUpdated }: EditT
     setError('');
     setName(token.name || '');
     setApiToken(token.token_ref);
+    setIsDefault(token.is_default || false);
     setShowToken(false);
     onClose();
   };
@@ -166,6 +169,27 @@ export function EditTokenModal({ isOpen, onClose, token, onTokenUpdated }: EditT
                   </>
                 )}
               </label>
+            </div>
+
+            {/* Set as Default Checkbox */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-start">
+                <input
+                  type="checkbox"
+                  id="isDefault"
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
+                />
+                <div className="ml-2">
+                  <label htmlFor="isDefault" className="text-sm font-medium text-gray-900 cursor-pointer">
+                    Set as default token
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Only one token can be default per provider. Setting this will unset other defaults.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Help Text */}

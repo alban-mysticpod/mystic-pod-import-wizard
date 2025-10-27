@@ -98,6 +98,7 @@ export interface ApiToken {
   provider: 'printify' | 'shopify';
   token_ref: string;
   name?: string | null;
+  is_default?: boolean;
   created_at: string;
   last_used_at: string | null;
 }

@@ -7,7 +7,7 @@ import { PresetModal } from '@/components/PresetModal';
 import { TokenModal } from '@/components/TokenModal';
 import { EditTokenModal } from '@/components/EditTokenModal';
 import { ApiToken } from '@/types';
-import { Key, Plus, Trash2, Layers, Star, Edit2 } from 'lucide-react';
+import { Key, Plus, Trash2, Layers, Star, Edit2, StarIcon } from 'lucide-react';
 
 interface Preset {
   id: string;
@@ -347,6 +347,9 @@ export default function SettingsPage() {
                       <span className="font-medium text-gray-900">
                         {token.name || 'Unnamed Token'}
                       </span>
+                      {token.is_default && (
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" title="Default token" />
+                      )}
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
                     <p className="text-xs text-gray-500 capitalize mb-1">Provider: {token.provider}</p>
