@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { PresetModal } from '@/components/PresetModal';
 import { Key, Plus, Trash2, Layers, Star, Edit2 } from 'lucide-react';
-import Link from 'next/link';
 
 interface ApiToken {
   id: string;
@@ -30,6 +30,8 @@ export default function SettingsPage() {
   const [isLoadingPresets, setIsLoadingPresets] = useState(true);
   const [deletingTokenId, setDeletingTokenId] = useState<string | null>(null);
   const [deletingPresetId, setDeletingPresetId] = useState<string | null>(null);
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+  const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
 
   useEffect(() => {
     async function loadTokens() {
@@ -100,8 +102,7 @@ export default function SettingsPage() {
 
     setDeletingPresetId(presetId);
     try {
-      const userId = 'user-123'; // TODO: Get from auth
-      const response = await fetch(`/api/presets?userId=${userId}&presetId=${presetId}`, {
+      const response = await fetch(`/api/presets?id=${presetId}`, {
         method: 'DELETE',
       });
 
@@ -115,6 +116,58 @@ export default function SettingsPage() {
       alert('Failed to delete preset');
     } finally {
       setDeletingPresetId(null);
+    }
+  };
+
+  const handleCreatePreset = () => {
+    setEditingPreset(null);
+    setIsPresetModalOpen(true);
+  };
+
+  const handleEditPreset = (preset: Preset) => {
+    setEditingPreset(preset);
+    setIsPresetModalOpen(true);
+  };
+
+  const handleSavePreset = async (presetData: {
+    name: string;
+    blueprint_id: number;
+    print_provider_id: number;
+    placements: Record<string, any>;
+  }) => {
+    try {
+      if (editingPreset) {
+        // Update existing preset
+        const response = await fetch('/api/presets', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingPreset.id,
+            ...presetData,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to update preset');
+      } else {
+        // Create new preset
+        const response = await fetch('/api/presets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(presetData),
+        });
+
+        if (!response.ok) throw new Error('Failed to create preset');
+      }
+
+      // Reload presets
+      const response = await fetch('/api/presets');
+      if (response.ok) {
+        const data = await response.json();
+        setPresets(data.presets || []);
+      }
+    } catch (error) {
+      console.error('Error saving preset:', error);
+      throw error;
     }
   };
 
@@ -150,12 +203,15 @@ export default function SettingsPage() {
               </h2>
               <p className="text-sm text-gray-600 mt-1">Manage your design placement configurations</p>
             </div>
-            <Link href="/profile/presets">
-              <Button variant="secondary" size="sm" className="inline-flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Create Preset
-              </Button>
-            </Link>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="inline-flex items-center gap-2"
+              onClick={handleCreatePreset}
+            >
+              <Plus className="w-4 h-4" />
+              Create Preset
+            </Button>
           </div>
 
           {isLoadingPresets ? (
@@ -184,16 +240,15 @@ export default function SettingsPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link href={`/profile/presets?edit=${preset.id}`}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="inline-flex items-center gap-1"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                        Edit
-                      </Button>
-                    </Link>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="inline-flex items-center gap-1"
+                      onClick={() => handleEditPreset(preset)}
+                    >
+                      <Edit2 className="w-3 h-3" />
+                      Edit
+                    </Button>
                     <Button
                       variant="secondary"
                       size="sm"
@@ -285,6 +340,14 @@ export default function SettingsPage() {
           )}
         </div>
       </Card>
+
+      {/* Preset Modal */}
+      <PresetModal
+        isOpen={isPresetModalOpen}
+        onClose={() => setIsPresetModalOpen(false)}
+        onSave={handleSavePreset}
+        preset={editingPreset}
+      />
     </div>
   );
 }
