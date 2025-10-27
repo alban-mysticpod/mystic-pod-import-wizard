@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { PresetForm } from '@/components/PresetForm';
 import { PresetList } from '@/components/PresetList';
@@ -96,83 +94,67 @@ export default function PresetsPage() {
     await loadPresets();
   };
 
-
   const handleCancel = () => {
     setShowForm(false);
     setEditingPreset(null);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-            <Link href="/profile" className="hover:text-blue-600">
-              Profile
-            </Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">Presets</span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                My Presets
-              </h1>
-              <p className="text-gray-600">
-                Save and manage your design placement configurations
-              </p>
-            </div>
-            
-            {!showForm && (
-              <Button
-                variant="primary"
-                onClick={handleCreateNew}
-              >
-                + New Preset
-              </Button>
-            )}
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            My Presets
+          </h1>
+          <p className="text-gray-600">
+            Save and manage your design placement configurations
+          </p>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-            {error}
-          </div>
+        
+        {!showForm && (
+          <Button
+            variant="primary"
+            onClick={handleCreateNew}
+          >
+            + New Preset
+          </Button>
         )}
+      </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          {showForm ? (
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                {editingPreset ? 'Edit Preset' : 'Create New Preset'}
-              </h2>
-              <PresetForm
-                preset={editingPreset}
-                onSave={handleSave}
-                onCancel={handleCancel}
-              />
-            </div>
-          ) : isLoading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-600">Loading presets...</p>
-            </div>
-          ) : (
-            <PresetList
-              presets={presets}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          )}
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+          {error}
         </div>
+      )}
+
+      {/* Content */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        {showForm ? (
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              {editingPreset ? 'Edit Preset' : 'Create New Preset'}
+            </h2>
+            <PresetForm
+              preset={editingPreset}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
+          </div>
+        ) : isLoading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-gray-600">Loading presets...</p>
+          </div>
+        ) : (
+          <PresetList
+            presets={presets}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
       </div>
     </div>
   );
 }
-

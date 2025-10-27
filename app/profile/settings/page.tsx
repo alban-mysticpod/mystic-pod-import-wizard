@@ -53,11 +53,10 @@ export default function SettingsPage() {
   useEffect(() => {
     async function loadPresets() {
       try {
-        const userId = 'user-123'; // TODO: Get from auth
-        const response = await fetch(`/api/presets?userId=${userId}`);
+        const response = await fetch('/api/presets');
         if (response.ok) {
           const data = await response.json();
-          setPresets(data);
+          setPresets(data.presets || []);
         }
       } catch (error) {
         console.error('Error loading presets:', error);
