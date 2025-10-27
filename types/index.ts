@@ -103,6 +103,16 @@ export interface ApiToken {
   last_used_at: string | null;
 }
 
+// Store types (from stores table)
+export interface Store {
+  id: string;
+  user_id: string;
+  name: string;
+  provider: 'printify' | 'shopify';
+  store_id: string; // External store ID (Printify shop_id, etc.)
+  created_at: string;
+}
+
 // Print Area types
 export interface PrintArea {
   id: string;

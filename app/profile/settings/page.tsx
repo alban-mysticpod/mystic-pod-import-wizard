@@ -6,8 +6,8 @@ import { Card } from '@/components/Card';
 import { PresetModal } from '@/components/PresetModal';
 import { TokenModal } from '@/components/TokenModal';
 import { EditTokenModal } from '@/components/EditTokenModal';
-import { ApiToken } from '@/types';
-import { Key, Plus, Trash2, Layers, Star, Edit2 } from 'lucide-react';
+import { ApiToken, Store } from '@/types';
+import { Key, Plus, Trash2, Layers, Star, Edit2, Store as StoreIcon } from 'lucide-react';
 
 interface Preset {
   id: string;
@@ -21,10 +21,13 @@ interface Preset {
 export default function SettingsPage() {
   const [tokens, setTokens] = useState<ApiToken[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
+  const [stores, setStores] = useState<Store[]>([]);
   const [isLoadingTokens, setIsLoadingTokens] = useState(true);
   const [isLoadingPresets, setIsLoadingPresets] = useState(true);
+  const [isLoadingStores, setIsLoadingStores] = useState(true);
   const [deletingTokenId, setDeletingTokenId] = useState<string | null>(null);
   const [deletingPresetId, setDeletingPresetId] = useState<string | null>(null);
+  const [deletingStoreId, setDeletingStoreId] = useState<string | null>(null);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
   const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
@@ -67,6 +70,26 @@ export default function SettingsPage() {
     }
 
     loadPresets();
+  }, []);
+
+  useEffect(() => {
+    async function loadStores() {
+      try {
+        const { getUserId } = await import('@/lib/user');
+        const userId = getUserId();
+        const response = await fetch(`/api/user/stores?userId=${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setStores(data || []);
+        }
+      } catch (error) {
+        console.error('Error loading stores:', error);
+      } finally {
+        setIsLoadingStores(false);
+      }
+    }
+
+    loadStores();
   }, []);
 
   const loadTokens = async () => {
@@ -170,6 +193,32 @@ export default function SettingsPage() {
     // Reload tokens after updating
     await loadTokens();
     setEditingToken(null);
+  };
+
+  const handleDeleteStore = async (storeId: string) => {
+    if (!confirm('Are you sure you want to delete this shop?')) {
+      return;
+    }
+
+    setDeletingStoreId(storeId);
+    try {
+      const { getUserId } = await import('@/lib/user');
+      const userId = getUserId();
+      const response = await fetch(`/api/user/stores?userId=${userId}&storeId=${storeId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setStores(stores.filter(s => s.id !== storeId));
+      } else {
+        alert('Failed to delete shop');
+      }
+    } catch (error) {
+      console.error('Error deleting shop:', error);
+      alert('Failed to delete shop');
+    } finally {
+      setDeletingStoreId(null);
+    }
   };
 
   const handleDeletePreset = async (presetId: string) => {
@@ -430,6 +479,71 @@ export default function SettingsPage() {
               <Key className="w-12 h-12 mx-auto mb-2 text-gray-400" />
               <p>No API tokens configured</p>
               <p className="text-sm text-gray-400 mt-1">Add a token to get started</p>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Shops Section */}
+      <Card>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <StoreIcon className="w-5 h-5" />
+                Shops
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">Manage your connected shops</p>
+            </div>
+          </div>
+
+          {isLoadingStores ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          ) : stores.length > 0 ? (
+            <div className="space-y-3">
+              {stores.map((store) => (
+                <div
+                  key={store.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-900">
+                        {store.name}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
+                    </div>
+                    <p className="text-xs text-gray-500 capitalize mb-1">Provider: {store.provider}</p>
+                    <p className="text-sm text-gray-600">Store ID: {store.store_id}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Created: {formatDate(store.created_at)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDeleteStore(store.id)}
+                      disabled={deletingStoreId === store.id}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      {deletingStoreId === store.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <StoreIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+              <p>No shops connected</p>
+              <p className="text-sm text-gray-400 mt-1">Connect a shop to get started</p>
             </div>
           )}
         </div>
