@@ -276,11 +276,10 @@ export default function SettingsPage() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="inline-flex items-center gap-1"
                       onClick={() => handleEditPreset(preset)}
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-200"
                     >
-                      <Edit2 className="w-3 h-3" />
-                      Edit
+                      <Edit2 className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="secondary"
