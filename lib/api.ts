@@ -39,13 +39,13 @@ export async function validateDriveFolder(folderUrl: string): Promise<DriveValid
 }
 
 // Vérifier un token Printify - retourne maintenant un record apiToken
-export async function verifyPrintifyToken(apiToken: string, importId: string): Promise<{ id: string; token_ref: string }> {
+export async function verifyPrintifyToken(apiToken: string, importId: string, name?: string): Promise<{ id: string; token_ref: string }> {
   const userId = getUserId();
   
   const response = await fetch('/api/validate-token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ apiToken, userId, importId }),
+    body: JSON.stringify({ apiToken, userId, importId, name }),
   });
 
   if (!response.ok) {

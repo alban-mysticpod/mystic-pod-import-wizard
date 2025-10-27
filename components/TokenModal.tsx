@@ -114,17 +114,6 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
               </div>
             )}
 
-            {/* Token Name */}
-            <Input
-              label="Token Name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., My Printify Store, Production Account"
-              helperText="Give this token a memorable name to identify it later"
-              required
-            />
-
             {/* Provider Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -157,6 +146,17 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
                 </button>
               </div>
             </div>
+
+            {/* Token Name */}
+            <Input
+              label="Token Name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., My Printify Store, Production Account"
+              helperText="Give this token a memorable name to identify it later"
+              required
+            />
 
             {/* Token Input */}
             <Input

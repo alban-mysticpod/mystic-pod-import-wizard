@@ -26,6 +26,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
   // Token state
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const [newToken, setNewToken] = useState('');
+  const [newTokenName, setNewTokenName] = useState('');
   const [isValidatingToken, setIsValidatingToken] = useState(false);
   const [tokenError, setTokenError] = useState('');
   
@@ -93,11 +94,12 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
     }
   };
 
-  const validateTokenAndLoadShops = async (token: string) => {
+  const validateTokenAndLoadShops = async (token: string, name?: string) => {
     const tokenKey = token.substring(0, 20); // Utiliser plus de caractères pour l'unicité
     
     console.log('🔍 VALIDATION ATTEMPT:', {
       token: token.substring(0, 10) + '...',
+      name,
       isValidatingToken,
       selectedToken: selectedToken?.substring(0, 10) + '...' || 'null',
       hasConnectedAccount,
@@ -134,10 +136,10 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
     setTokenError('');
     
     try {
-      console.log('🚀 Step 1: Verifying Printify token... importId:', importId);
+      console.log('🚀 Step 1: Verifying Printify token... importId:', importId, 'name:', name);
       
       // Étape 1: Vérifier le token et récupérer le record apiToken
-      const tokenRecord = await verifyPrintifyToken(token, importId);
+      const tokenRecord = await verifyPrintifyToken(token, importId, name);
       
       if (!tokenRecord || !tokenRecord.id || !tokenRecord.token_ref) {
         throw new Error('Invalid token verification response');
@@ -181,6 +183,11 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
   };
 
   const handleConnectPrintify = async () => {
+    if (!newTokenName.trim()) {
+      setTokenError('Please enter a name for your token');
+      return;
+    }
+    
     if (!newToken.trim()) {
       setTokenError('Please enter your Printify API token');
       return;
@@ -191,8 +198,8 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
       return;
     }
     
-    console.log('📋 CALLING validateTokenAndLoadShops from handleConnectPrintify');
-    await validateTokenAndLoadShops(newToken);
+    console.log('📋 CALLING validateTokenAndLoadShops from handleConnectPrintify with name:', newTokenName);
+    await validateTokenAndLoadShops(newToken, newTokenName);
   };
 
   const handleSelectToken = async (token: string) => {
@@ -207,6 +214,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
     setSelectedToken(null);
     setHasConnectedAccount(false);
     setNewToken('');
+    setNewTokenName('');
     setTokenError('');
   };
 
@@ -291,10 +299,13 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
                       disabled={isValidatingToken}
                       className="w-full p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-left disabled:opacity-50"
                     >
-                      <p className="font-mono text-sm text-gray-800">
+                      <p className="font-semibold text-gray-900 mb-1">
+                        {token.name || `${token.provider.charAt(0).toUpperCase() + token.provider.slice(1)} Token`}
+                      </p>
+                      <p className="font-mono text-xs text-gray-500">
                         {token.token_ref.substring(0, 10)}...{token.token_ref.substring(token.token_ref.length - 10)}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-400 mt-1">
                         Added: {new Date(token.created_at).toLocaleDateString()}
                       </p>
                     </button>
@@ -313,6 +324,17 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
             
             {/* New Token Input */}
             <div className="space-y-3">
+              <Input
+                label="Token Name"
+                id="tokenName"
+                type="text"
+                value={newTokenName}
+                onChange={(e) => setNewTokenName(e.target.value)}
+                placeholder="e.g., My Printify Store, Production Account"
+                helperText="Give this token a memorable name to identify it later"
+                required
+              />
+              
               <Input
                 label="Printify API Token"
                 id="apiToken"
@@ -341,7 +363,7 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
               <Button
                 onClick={handleConnectPrintify}
                 loading={isValidatingToken}
-                disabled={!newToken.trim() || isValidatingToken}
+                disabled={!newTokenName.trim() || !newToken.trim() || isValidatingToken}
                 className="w-full"
               >
                 Connect Printify Account
