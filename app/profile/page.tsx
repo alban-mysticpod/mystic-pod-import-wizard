@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { Header } from '@/components/Header';
-import { ArrowLeft, Settings, Mail, Calendar, Package, Key, Trash2, Plus, CheckCircle, XCircle, Layers, Activity, TrendingUp } from 'lucide-react';
+import { Settings, Key, Trash2, Plus, CheckCircle, XCircle, Layers, Activity, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { fetchUserStats, UserStats } from '@/lib/api';
 
@@ -28,54 +27,76 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch user profile
-        const profileResponse = await fetch('/api/user/profile?userId=user_test');
-        const profileData = await profileResponse.json();
-        setUserData(profileData);
-
-        // Fetch API tokens
-        const tokensResponse = await fetch('/api/user/tokens?userId=user_test&provider=printify');
-        const tokensData = await tokensResponse.json();
-        setTokens(tokensData);
-
-        // Fetch user stats
-        const statsData = await fetchUserStats();
-        setStats(statsData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
+        // TODO: Replace with actual API call
+        setUserData({
+          display_name: 'John Doe',
+          email: 'john@example.com',
+          created_at: new Date().toISOString(),
+        });
         setIsLoading(false);
-        setIsLoadingTokens(false);
-        setIsLoadingStats(false);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setIsLoading(false);
       }
     }
+
     fetchData();
   }, []);
 
+  useEffect(() => {
+    async function loadTokens() {
+      try {
+        const userId = 'user-123'; // TODO: Get from auth
+        const response = await fetch(`/api/user/tokens?userId=${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setTokens(data);
+        }
+      } catch (error) {
+        console.error('Error loading tokens:', error);
+      } finally {
+        setIsLoadingTokens(false);
+      }
+    }
+
+    loadTokens();
+  }, []);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const data = await fetchUserStats();
+        setStats(data);
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    }
+
+    loadStats();
+  }, []);
+
   const handleDeleteToken = async (tokenId: string) => {
-    if (!confirm('Are you sure you want to delete this token?')) {
+    if (!confirm('Are you sure you want to delete this API token?')) {
       return;
     }
 
     setDeletingTokenId(tokenId);
     try {
-      const response = await fetch('/api/user/tokens', {
+      const userId = 'user-123'; // TODO: Get from auth
+      const response = await fetch(`/api/user/tokens?userId=${userId}&tokenId=${tokenId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ tokenId }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete token');
+      if (response.ok) {
+        setTokens(tokens.filter(t => t.id !== tokenId));
+      } else {
+        alert('Failed to delete token');
       }
-
-      // Remove token from state
-      setTokens(tokens.filter(t => t.id !== tokenId));
     } catch (error) {
       console.error('Error deleting token:', error);
-      alert('Failed to delete token. Please try again.');
+      alert('Failed to delete token');
     } finally {
       setDeletingTokenId(null);
     }
@@ -96,294 +117,167 @@ export default function ProfilePage() {
 
   if (isLoading || isLoadingStats) {
     return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-24 py-12 px-4 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading profile...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading profile...</p>
         </div>
-      </>
+      </div>
     );
   }
 
-  const displayName = userData?.display_name || 'User';
-  const email = userData?.email || 'user@example.com';
-  const initials = displayName
-    .split(' ')
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-  const memberSince = userData?.created_at 
-    ? new Date(userData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    : 'Recently';
-
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-24 py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Back to Wizard</span>
-            </Link>
-          </div>
-
-          {/* Profile Header */}
-          <Card className="mb-6">
-            <div className="p-8">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                {/* Avatar */}
-                {userData?.avatar_url ? (
-                  <img
-                    src={userData.avatar_url}
-                    alt={displayName}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-4xl border-4 border-white shadow-xl">
-                    {initials}
-                  </div>
-                )}
-
-                {/* User Info */}
-                <div className="flex-1 text-center md:text-left">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{displayName}</h1>
-                  <p className="text-gray-600 mb-4 flex items-center justify-center md:justify-start gap-2">
-                    <Mail className="w-4 h-4" />
-                    {email}
-                  </p>
-                  <p className="text-sm text-gray-500 flex items-center justify-center md:justify-start gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Member since {memberSince}
-                  </p>
-                </div>
-
-                {/* Settings Button */}
-                <Link href="/profile/settings">
-                  <Button variant="secondary" className="inline-flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    Edit Profile
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </Card>
-
-          {/* Quick Links */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Link href="/profile/presets" className="h-full">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <div className="p-6 h-full flex items-center">
-                  <div className="flex items-center gap-4 w-full">
-                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <Layers className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900">My Presets</h3>
-                      <p className="text-sm text-gray-600">Manage design placement configurations</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-
-            <Link href="/profile/settings" className="h-full">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <div className="p-6 h-full flex items-center">
-                  <div className="flex items-center gap-4 w-full">
-                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                      <Settings className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900">Settings</h3>
-                      <p className="text-sm text-gray-600">Update your profile information</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          </div>
-
-          {/* API Tokens Section */}
-          <Card className="mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                    <Key className="w-5 h-5" />
-                    Printify API Tokens
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Manage your saved Printify API tokens
-                  </p>
-                </div>
-                <Link href="/">
-                  <Button variant="primary" size="sm" className="inline-flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Token
-                  </Button>
-                </Link>
-              </div>
-
-              {isLoadingTokens ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-sm text-gray-600">Loading tokens...</p>
-                </div>
-              ) : tokens.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <Key className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-4">No Printify tokens saved yet</p>
-                  <Link href="/">
-                    <Button variant="primary" size="sm">
-                      Add Your First Token
-                    </Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {tokens.map((token) => (
-                    <div
-                      key={token.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="font-medium text-gray-900">
-                            Printify Token
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 font-mono">
-                          {maskToken(token.token_ref)}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                          <span>Added: {formatDate(token.created_at)}</span>
-                          {token.last_used_at && (
-                            <span>Last used: {formatDate(token.last_used_at)}</span>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleDeleteToken(token.id)}
-                        loading={deletingTokenId === token.id}
-                        className="text-red-600 hover:bg-red-50 border-red-200"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Card>
-              <div className="p-6 text-center">
-                <Package className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900 mb-1">
-                  {stats?.totalImports || 0}
-                </p>
-                <p className="text-sm text-gray-600">Total Imports</p>
-              </div>
-            </Card>
-
-            <Card>
-              <div className="p-6 text-center">
-                <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900 mb-1">
-                  {stats?.successfulImports || 0}
-                </p>
-                <p className="text-sm text-gray-600">Successful</p>
-              </div>
-            </Card>
-
-            <Card>
-              <div className="p-6 text-center">
-                <TrendingUp className="w-8 h-8 text-purple-500 mx-auto mb-3" />
-                <p className="text-3xl font-bold text-gray-900 mb-1">
-                  {stats?.designsUploaded || 0}
-                </p>
-                <p className="text-sm text-gray-600">Designs Uploaded</p>
-              </div>
-            </Card>
-          </div>
-
-          {/* Recent Activity */}
-          <Card>
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                Recent Activity
-              </h2>
-              
-              {!stats?.recentActivity || stats.recentActivity.length === 0 ? (
-                <div className="text-center py-12">
-                  <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">No activity yet</p>
-                  <Link href="/">
-                    <Button variant="primary">Start Your First Import</Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {stats.recentActivity.map((event) => (
-                    <div
-                      key={event.id}
-                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                        event.severity === 'error' ? 'bg-red-500' :
-                        event.severity === 'warning' ? 'bg-yellow-500' :
-                        event.severity === 'success' ? 'bg-green-500' :
-                        'bg-blue-500'
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="font-medium text-gray-900 capitalize">
-                            {event.eventType.replace(/-/g, ' ')}
-                          </p>
-                          <span className="text-xs text-gray-500 flex-shrink-0">
-                            {formatDate(event.createdAt)}
-                          </span>
-                        </div>
-                        {event.message && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            {event.message}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-400 mt-1">
-                          Import: {event.importId.substring(0, 8)}...
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {stats.recentActivity.length >= 10 && (
-                    <div className="text-center pt-4">
-                      <p className="text-sm text-gray-500">
-                        Showing latest 10 activities
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
+        <p className="text-gray-600">Manage your account settings and preferences</p>
       </div>
-    </>
+
+      {/* Dashboard Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Activity className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1">
+              {stats?.total_imports || 0}
+            </h3>
+            <p className="text-sm text-gray-600">Total Imports</p>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1">
+              {stats?.successful_imports || 0}
+            </h3>
+            <p className="text-sm text-gray-600">Successful Imports</p>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1">
+              {stats?.designs_uploaded || 0}
+            </h3>
+            <p className="text-sm text-gray-600">Designs Uploaded</p>
+          </div>
+        </Card>
+      </div>
+
+      {/* Quick Links */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link href="/profile/presets" className="h-full">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <div className="p-6 h-full flex items-center">
+              <div className="flex items-center gap-4 w-full">
+                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <Layers className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">My Presets</h3>
+                  <p className="text-sm text-gray-600">Manage design placement configurations</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Link>
+
+        <Link href="/profile/settings" className="h-full">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <div className="p-6 h-full flex items-center">
+              <div className="flex items-center gap-4 w-full">
+                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Settings className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">Settings</h3>
+                  <p className="text-sm text-gray-600">Update your profile information</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Link>
+      </div>
+
+      {/* API Tokens Section */}
+      <Card>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <Key className="w-5 h-5" />
+                API Tokens
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">Manage your connected services</p>
+            </div>
+            <Button variant="secondary" size="sm" className="inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add Token
+            </Button>
+          </div>
+
+          {isLoadingTokens ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          ) : tokens.length > 0 ? (
+            <div className="space-y-3">
+              {tokens.map((token) => (
+                <div
+                  key={token.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-900 capitalize">{token.provider}</span>
+                      <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
+                    </div>
+                    <p className="text-sm text-gray-600 font-mono">{maskToken(token.token_ref)}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Created: {formatDate(token.created_at)}
+                      {token.last_used_at && ` • Last used: ${formatDate(token.last_used_at)}`}
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleDeleteToken(token.id)}
+                    disabled={deletingTokenId === token.id}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    {deletingTokenId === token.id ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Key className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+              <p>No API tokens configured</p>
+              <p className="text-sm text-gray-400 mt-1">Add a token to get started</p>
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
   );
 }

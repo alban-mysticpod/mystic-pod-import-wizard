@@ -1,13 +1,6 @@
-import { Wizard } from '@/components/Wizard';
-import { Header } from '@/components/Header';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <>
-      <Header />
-      <div className="pt-16">
-        <Wizard />
-      </div>
-    </>
-  );
+  // Redirect to dashboard
+  redirect('/dashboard');
 }
