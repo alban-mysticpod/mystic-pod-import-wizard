@@ -84,7 +84,7 @@ export default function DashboardPage() {
             <p className="text-gray-600">Import your designs from Google Drive to Printify in just a few clicks.</p>
           </div>
           <Link href="/import">
-            <Button size="lg" className="inline-flex items-center gap-2">
+            <Button size="lg" variant="primary" className="inline-flex items-center gap-2">
               <Upload className="w-5 h-5" />
               Start New Import
             </Button>
@@ -98,8 +98,8 @@ export default function DashboardPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Package className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <Package className="w-6 h-6 text-gray-700" />
               </div>
               <span className="text-sm text-gray-500">All time</span>
             </div>
@@ -112,10 +112,10 @@ export default function DashboardPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-gray-700" />
               </div>
-              <span className="text-sm text-green-600 font-medium">
+              <span className="text-sm text-gray-700 font-medium">
                 {stats.totalImports > 0 ? Math.round((stats.successfulImports / stats.totalImports) * 100) : 0}% success
               </span>
             </div>
@@ -128,8 +128,8 @@ export default function DashboardPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-gray-700" />
               </div>
               <span className="text-sm text-gray-500">Total</span>
             </div>

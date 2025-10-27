@@ -139,8 +139,8 @@ export default function ProfilePage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Activity className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <Activity className="w-6 h-6 text-gray-700" />
               </div>
             </div>
             <h3 className="text-3xl font-bold text-gray-900 mb-1">
@@ -153,8 +153,8 @@ export default function ProfilePage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-gray-700" />
               </div>
             </div>
             <h3 className="text-3xl font-bold text-gray-900 mb-1">
@@ -167,8 +167,8 @@ export default function ProfilePage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-gray-700" />
               </div>
             </div>
             <h3 className="text-3xl font-bold text-gray-900 mb-1">
@@ -185,8 +185,8 @@ export default function ProfilePage() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
             <div className="p-6 h-full flex items-center">
               <div className="flex items-center gap-4 w-full">
-                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <Layers className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <Layers className="w-6 h-6 text-gray-700" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">My Presets</h3>
@@ -201,8 +201,8 @@ export default function ProfilePage() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
             <div className="p-6 h-full flex items-center">
               <div className="flex items-center gap-4 w-full">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Settings className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <Settings className="w-6 h-6 text-gray-700" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">Settings</h3>

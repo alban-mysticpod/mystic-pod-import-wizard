@@ -76,10 +76,12 @@ export function Sidebar({ userName = 'User', userEmail = 'user@example.com', use
         {/* Logo */}
         <div className="p-6 border-b border-gray-700">
           <Link href="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-xl">
-              W
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <img 
+              src="https://pub-b841d246707840cdb0446d5cf3114d7b.r2.dev/wescale_logo.jpg" 
+              alt="WeScale Logo" 
+              className="w-10 h-10 rounded-lg object-contain bg-white p-1"
+            />
+            <span className="text-2xl font-bold text-white">
               WeScale
             </span>
           </Link>
@@ -99,7 +101,7 @@ export function Sidebar({ userName = 'User', userEmail = 'user@example.com', use
                 className={cn(
                   'flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200',
                   active
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                    ? 'bg-white text-gray-900 shadow-lg'
                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 )}
               >
@@ -118,11 +120,11 @@ export function Sidebar({ userName = 'User', userEmail = 'user@example.com', use
             onClick={() => setIsMobileMenuOpen(false)}
             className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors mb-2"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
               {userAvatar ? (
                 <img src={userAvatar} alt={userName} className="w-full h-full rounded-full object-cover" />
               ) : (
-                <User className="w-5 h-5 text-white" />
+                <User className="w-5 h-5 text-gray-300" />
               )}
             </div>
             <div className="flex-1 min-w-0">
