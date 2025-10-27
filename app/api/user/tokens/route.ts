@@ -49,12 +49,13 @@ export async function GET(request: NextRequest) {
 /**
  * DELETE /api/user/tokens
  * Deletes a specific API token
- * Body: { tokenId }
+ * Query params: tokenId, userId
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { tokenId } = body;
+    const { searchParams } = new URL(request.url);
+    const tokenId = searchParams.get('tokenId');
+    const userId = searchParams.get('userId');
 
     if (!tokenId) {
       return NextResponse.json(
@@ -63,12 +64,20 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.log('🗑️ Deleting token:', tokenId);
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    console.log('🗑️ Deleting token:', tokenId, 'for user:', userId);
 
     const { error } = await supabaseAdmin
       .from('api_tokens')
       .delete()
-      .eq('id', tokenId);
+      .eq('id', tokenId)
+      .eq('user_id', userId); // Security: only delete user's own tokens
 
     if (error) {
       console.error('❌ Supabase error:', error);
