@@ -11,6 +11,7 @@ interface ApiToken {
   id: string;
   provider: 'printify' | 'shopify';
   token_ref: string;
+  name?: string | null;
   created_at: string;
   last_used_at: string | null;
 }
@@ -337,9 +338,12 @@ export default function SettingsPage() {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-900 capitalize">{token.provider}</span>
+                      <span className="font-medium text-gray-900">
+                        {token.name || `${token.provider.charAt(0).toUpperCase() + token.provider.slice(1)} Token`}
+                      </span>
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
+                    <p className="text-xs text-gray-500 capitalize mb-1">Provider: {token.provider}</p>
                     <p className="text-sm text-gray-600 font-mono">{maskToken(token.token_ref)}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       Created: {formatDate(token.created_at)}

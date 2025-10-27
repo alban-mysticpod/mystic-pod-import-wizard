@@ -16,6 +16,7 @@ interface TokenModalProps {
 export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
   const [provider, setProvider] = useState<'printify' | 'shopify'>('printify');
   const [token, setToken] = useState('');
+  const [name, setName] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,6 +24,7 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
     if (isOpen) {
       // Reset form when modal opens
       setToken('');
+      setName('');
       setError('');
       setProvider('printify');
     }
@@ -31,6 +33,11 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!name.trim()) {
+      setError('Token name is required');
+      return;
+    }
 
     if (!token.trim()) {
       setError('API token is required');
@@ -42,8 +49,21 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
       const userId = getUserId();
       
       if (provider === 'printify') {
-        // Validate Printify token (without importId for settings context)
-        await verifyPrintifyToken(token, userId);
+        // Validate and save Printify token with name
+        const response = await fetch('/api/validate-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            apiToken: token, 
+            userId, 
+            importId: userId, // Use userId as importId in settings context
+            name: name.trim() // Send the name to be saved
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to validate token');
+        }
       } else {
         // TODO: Add Shopify validation
         throw new Error('Shopify integration coming soon');
@@ -93,6 +113,17 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
                 {error}
               </div>
             )}
+
+            {/* Token Name */}
+            <Input
+              label="Token Name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., My Printify Store, Production Account"
+              helperText="Give this token a memorable name to identify it later"
+              required
+            />
 
             {/* Provider Selection */}
             <div>
@@ -171,7 +202,7 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
                 type="submit"
                 variant="primary"
                 loading={isValidating}
-                disabled={!token.trim() || isValidating}
+                disabled={!name.trim() || !token.trim() || isValidating}
               >
                 Add Token
               </Button>

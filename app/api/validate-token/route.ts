@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { apiToken, userId, importId } = body;
+    const { apiToken, userId, importId, name } = body;
 
     if (!apiToken) {
       return NextResponse.json(
@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
     }
 
     const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/verify-printify-token';
-    const payload = { apiToken, userId, importId };
+    const payload = { apiToken, userId, importId, name: name || null };
     
     console.log('🚀 Proxying Printify token request to n8n webhook:');
     console.log('- URL:', webhookUrl);
-    console.log('- Payload:', { apiToken: '***HIDDEN***', userId, importId }); // Ne pas logger le token complet
+    console.log('- Payload:', { apiToken: '***HIDDEN***', userId, importId, name }); // Ne pas logger le token complet
 
     // Faire la requête vers le webhook n8n
     const n8nResponse = await fetch(webhookUrl, {
