@@ -17,6 +17,7 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
   const [provider, setProvider] = useState<'printify' | 'shopify'>('printify');
   const [token, setToken] = useState('');
   const [name, setName] = useState('');
+  const [isDefault, setIsDefault] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,6 +26,7 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
       // Reset form when modal opens
       setToken('');
       setName('');
+      setIsDefault(false);
       setError('');
       setProvider('printify');
     }
@@ -57,7 +59,8 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
             apiToken: token, 
             userId, 
             importId: userId, // Use userId as importId in settings context
-            name: name.trim() // Send the name to be saved
+            name: name.trim(), // Send the name to be saved
+            is_default: isDefault // Send the default flag
           }),
         });
 
@@ -167,6 +170,27 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
               placeholder="Enter your API token"
               required
             />
+
+            {/* Set as Default Checkbox */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-start">
+                <input
+                  type="checkbox"
+                  id="isDefault"
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
+                />
+                <div className="ml-2">
+                  <label htmlFor="isDefault" className="text-sm font-medium text-gray-900 cursor-pointer">
+                    Set as default token
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    This token will be used by default for {provider} operations.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {/* Helper Text */}
             <div className="text-sm text-gray-500">
