@@ -5,6 +5,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PresetModal } from '@/components/PresetModal';
 import { TokenModal } from '@/components/TokenModal';
+import { EditTokenModal } from '@/components/EditTokenModal';
 import { ApiToken } from '@/types';
 import { Key, Plus, Trash2, Layers, Star, Edit2 } from 'lucide-react';
 
@@ -27,6 +28,8 @@ export default function SettingsPage() {
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
   const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
+  const [isEditTokenModalOpen, setIsEditTokenModalOpen] = useState(false);
+  const [editingToken, setEditingToken] = useState<ApiToken | null>(null);
 
   useEffect(() => {
     async function loadTokens() {
@@ -112,6 +115,17 @@ export default function SettingsPage() {
   const handleTokenAdded = async () => {
     // Reload tokens after adding a new one
     await loadTokens();
+  };
+
+  const handleEditToken = (token: ApiToken) => {
+    setEditingToken(token);
+    setIsEditTokenModalOpen(true);
+  };
+
+  const handleTokenUpdated = async () => {
+    // Reload tokens after updating
+    await loadTokens();
+    setEditingToken(null);
   };
 
   const handleDeletePreset = async (presetId: string) => {
@@ -342,19 +356,29 @@ export default function SettingsPage() {
                       {token.last_used_at && ` • Last used: ${formatDate(token.last_used_at)}`}
                     </p>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleDeleteToken(token.id)}
-                    disabled={deletingTokenId === token.id}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    {deletingTokenId === token.id ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleEditToken(token)}
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDeleteToken(token.id)}
+                      disabled={deletingTokenId === token.id}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      {deletingTokenId === token.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -382,6 +406,19 @@ export default function SettingsPage() {
         onClose={() => setIsTokenModalOpen(false)}
         onTokenAdded={handleTokenAdded}
       />
+
+      {/* Edit Token Modal */}
+      {editingToken && (
+        <EditTokenModal
+          isOpen={isEditTokenModalOpen}
+          onClose={() => {
+            setIsEditTokenModalOpen(false);
+            setEditingToken(null);
+          }}
+          token={editingToken}
+          onTokenUpdated={handleTokenUpdated}
+        />
+      )}
     </div>
   );
 }

@@ -47,6 +47,66 @@ export async function GET(request: NextRequest) {
 }
 
 /**
+ * PATCH /api/user/tokens
+ * Updates an API token (name and/or token_ref)
+ * Body: { tokenId, userId, name, token_ref }
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { tokenId, userId, name, token_ref } = body;
+
+    if (!tokenId) {
+      return NextResponse.json(
+        { error: 'tokenId is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    console.log('✏️ Updating token:', tokenId, 'for user:', userId);
+
+    // Build update object
+    const updateData: any = {};
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+    if (token_ref !== undefined) {
+      updateData.token_ref = token_ref;
+    }
+
+    const { error } = await supabaseAdmin
+      .from('api_tokens')
+      .update(updateData)
+      .eq('id', tokenId)
+      .eq('user_id', userId); // Security: only update user's own tokens
+
+    if (error) {
+      console.error('❌ Supabase error:', error);
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+
+    console.log('✅ Token updated successfully');
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('❌ Unexpected error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * DELETE /api/user/tokens
  * Deletes a specific API token
  * Query params: tokenId, userId
