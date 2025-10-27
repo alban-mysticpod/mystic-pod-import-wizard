@@ -95,12 +95,56 @@ export default function SettingsPage() {
     try {
       const { getUserId } = await import('@/lib/user');
       const userId = getUserId();
+      
+      // Find the token being deleted
+      const tokenToDelete = tokens.find(t => t.id === tokenId);
+      if (!tokenToDelete) {
+        throw new Error('Token not found');
+      }
+
+      // Check if this was the default token
+      const wasDefault = tokenToDelete.is_default;
+      const provider = tokenToDelete.provider;
+
+      // Delete the token
       const response = await fetch(`/api/user/tokens?userId=${userId}&tokenId=${tokenId}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        setTokens(tokens.filter(t => t.id !== tokenId));
+        // If we deleted the default token, promote another token of the same provider
+        if (wasDefault) {
+          // Find remaining tokens of the same provider
+          const remainingTokensOfSameProvider = tokens.filter(
+            t => t.id !== tokenId && t.provider === provider
+          );
+
+          // If there are other tokens of the same provider, promote the first one
+          if (remainingTokensOfSameProvider.length > 0) {
+            const newDefaultToken = remainingTokensOfSameProvider[0];
+            console.log(`🔄 Promoting token ${newDefaultToken.id} as new default for ${provider}`);
+            
+            // Update the new default token
+            const updateResponse = await fetch('/api/user/tokens', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                tokenId: newDefaultToken.id,
+                userId,
+                is_default: true,
+              }),
+            });
+
+            if (!updateResponse.ok) {
+              console.error('❌ Failed to promote new default token');
+            } else {
+              console.log('✅ New default token promoted successfully');
+            }
+          }
+        }
+
+        // Reload tokens to get updated list
+        await loadTokens();
       } else {
         alert('Failed to delete token');
       }
