@@ -300,9 +300,12 @@ export function Step2ChooseShop({ selectedShopId, importId, onNext, onBack }: St
                       className="w-full p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-left disabled:opacity-50"
                     >
                       <p className="font-semibold text-gray-900 mb-1">
-                        {token.name || `${token.provider.charAt(0).toUpperCase() + token.provider.slice(1)} Token`}
+                        {token.name || 'Unnamed Token'}
                       </p>
-                      <p className="font-mono text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 capitalize mb-1">
+                        Provider: {token.provider}
+                      </p>
+                      <p className="font-mono text-xs text-gray-400">
                         {token.token_ref.substring(0, 10)}...{token.token_ref.substring(token.token_ref.length - 10)}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
