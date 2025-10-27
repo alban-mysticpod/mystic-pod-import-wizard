@@ -5,16 +5,8 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PresetModal } from '@/components/PresetModal';
 import { TokenModal } from '@/components/TokenModal';
+import { ApiToken } from '@/types';
 import { Key, Plus, Trash2, Layers, Star, Edit2 } from 'lucide-react';
-
-interface ApiToken {
-  id: string;
-  provider: 'printify' | 'shopify';
-  token_ref: string;
-  name?: string | null;
-  created_at: string;
-  last_used_at: string | null;
-}
 
 interface Preset {
   id: string;
