@@ -1,28 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { Settings, Key, Trash2, Plus, CheckCircle, XCircle, Layers, Activity, TrendingUp } from 'lucide-react';
+import { Settings, CheckCircle, Layers, Activity, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { fetchUserStats, UserStats } from '@/lib/api';
 
-interface ApiToken {
-  id: string;
-  provider: 'printify' | 'shopify';
-  token_ref: string;
-  created_at: string;
-  last_used_at: string | null;
-}
-
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
-  const [tokens, setTokens] = useState<ApiToken[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingTokens, setIsLoadingTokens] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [deletingTokenId, setDeletingTokenId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -43,24 +31,6 @@ export default function ProfilePage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    async function loadTokens() {
-      try {
-        const userId = 'user-123'; // TODO: Get from auth
-        const response = await fetch(`/api/user/tokens?userId=${userId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTokens(data);
-        }
-      } catch (error) {
-        console.error('Error loading tokens:', error);
-      } finally {
-        setIsLoadingTokens(false);
-      }
-    }
-
-    loadTokens();
-  }, []);
 
   useEffect(() => {
     async function loadStats() {
@@ -77,43 +47,6 @@ export default function ProfilePage() {
     loadStats();
   }, []);
 
-  const handleDeleteToken = async (tokenId: string) => {
-    if (!confirm('Are you sure you want to delete this API token?')) {
-      return;
-    }
-
-    setDeletingTokenId(tokenId);
-    try {
-      const userId = 'user-123'; // TODO: Get from auth
-      const response = await fetch(`/api/user/tokens?userId=${userId}&tokenId=${tokenId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setTokens(tokens.filter(t => t.id !== tokenId));
-      } else {
-        alert('Failed to delete token');
-      }
-    } catch (error) {
-      console.error('Error deleting token:', error);
-      alert('Failed to delete token');
-    } finally {
-      setDeletingTokenId(null);
-    }
-  };
-
-  const maskToken = (token: string) => {
-    if (token.length < 20) return token;
-    return `${token.substring(0, 10)}...${token.substring(token.length - 10)}`;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   if (isLoading || isLoadingStats) {
     return (
@@ -214,70 +147,6 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      {/* API Tokens Section */}
-      <Card>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <Key className="w-5 h-5" />
-                API Tokens
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">Manage your connected services</p>
-            </div>
-            <Button variant="secondary" size="sm" className="inline-flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add Token
-            </Button>
-          </div>
-
-          {isLoadingTokens ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            </div>
-          ) : tokens.length > 0 ? (
-            <div className="space-y-3">
-              {tokens.map((token) => (
-                <div
-                  key={token.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-900 capitalize">{token.provider}</span>
-                      <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
-                    </div>
-                    <p className="text-sm text-gray-600 font-mono">{maskToken(token.token_ref)}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Created: {formatDate(token.created_at)}
-                      {token.last_used_at && ` • Last used: ${formatDate(token.last_used_at)}`}
-                    </p>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleDeleteToken(token.id)}
-                    disabled={deletingTokenId === token.id}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    {deletingTokenId === token.id ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Key className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-              <p>No API tokens configured</p>
-              <p className="text-sm text-gray-400 mt-1">Add a token to get started</p>
-            </div>
-          )}
-        </div>
-      </Card>
     </div>
   );
 }
