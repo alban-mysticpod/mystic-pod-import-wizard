@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { PresetModal } from '@/components/PresetModal';
+import { TokenModal } from '@/components/TokenModal';
 import { Key, Plus, Trash2, Layers, Star, Edit2 } from 'lucide-react';
 
 interface ApiToken {
@@ -32,11 +33,13 @@ export default function SettingsPage() {
   const [deletingPresetId, setDeletingPresetId] = useState<string | null>(null);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
   const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
+  const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadTokens() {
       try {
-        const userId = 'user-123'; // TODO: Get from auth
+        const { getUserId } = await import('@/lib/user');
+        const userId = getUserId();
         const response = await fetch(`/api/user/tokens?userId=${userId}`);
         if (response.ok) {
           const data = await response.json();
@@ -70,6 +73,23 @@ export default function SettingsPage() {
     loadPresets();
   }, []);
 
+  const loadTokens = async () => {
+    setIsLoadingTokens(true);
+    try {
+      const { getUserId } = await import('@/lib/user');
+      const userId = getUserId();
+      const response = await fetch(`/api/user/tokens?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTokens(data);
+      }
+    } catch (error) {
+      console.error('Error loading tokens:', error);
+    } finally {
+      setIsLoadingTokens(false);
+    }
+  };
+
   const handleDeleteToken = async (tokenId: string) => {
     if (!confirm('Are you sure you want to delete this API token?')) {
       return;
@@ -77,7 +97,8 @@ export default function SettingsPage() {
 
     setDeletingTokenId(tokenId);
     try {
-      const userId = 'user-123'; // TODO: Get from auth
+      const { getUserId } = await import('@/lib/user');
+      const userId = getUserId();
       const response = await fetch(`/api/user/tokens?userId=${userId}&tokenId=${tokenId}`, {
         method: 'DELETE',
       });
@@ -93,6 +114,11 @@ export default function SettingsPage() {
     } finally {
       setDeletingTokenId(null);
     }
+  };
+
+  const handleTokenAdded = async () => {
+    // Reload tokens after adding a new one
+    await loadTokens();
   };
 
   const handleDeletePreset = async (presetId: string) => {
@@ -287,7 +313,12 @@ export default function SettingsPage() {
               </h2>
               <p className="text-sm text-gray-600 mt-1">Manage your connected services</p>
             </div>
-            <Button variant="secondary" size="sm" className="inline-flex items-center gap-2">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="inline-flex items-center gap-2"
+              onClick={() => setIsTokenModalOpen(true)}
+            >
               <Plus className="w-4 h-4" />
               Add Token
             </Button>
@@ -347,6 +378,13 @@ export default function SettingsPage() {
         onClose={() => setIsPresetModalOpen(false)}
         onSave={handleSavePreset}
         preset={editingPreset}
+      />
+
+      {/* Token Modal */}
+      <TokenModal
+        isOpen={isTokenModalOpen}
+        onClose={() => setIsTokenModalOpen(false)}
+        onTokenAdded={handleTokenAdded}
       />
     </div>
   );
