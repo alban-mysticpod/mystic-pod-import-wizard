@@ -7,7 +7,7 @@ import { PresetModal } from '@/components/PresetModal';
 import { TokenModal } from '@/components/TokenModal';
 import { EditTokenModal } from '@/components/EditTokenModal';
 import { ApiToken } from '@/types';
-import { Key, Plus, Trash2, Layers, Star, Edit2, StarIcon } from 'lucide-react';
+import { Key, Plus, Trash2, Layers, Star, Edit2 } from 'lucide-react';
 
 interface Preset {
   id: string;
@@ -305,9 +305,6 @@ export default function SettingsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-gray-900">{preset.name}</span>
-                      {preset.favorite && (
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      )}
                     </div>
                     <p className="text-sm text-gray-600">
                       Blueprint: {preset.blueprint_id} • Provider: {preset.print_provider_id}
