@@ -407,6 +407,7 @@ export default function SettingsPage() {
         isOpen={isTokenModalOpen}
         onClose={() => setIsTokenModalOpen(false)}
         onTokenAdded={handleTokenAdded}
+        existingTokensCount={tokens.filter(t => t.provider === 'printify').length}
       />
 
       {/* Edit Token Modal */}

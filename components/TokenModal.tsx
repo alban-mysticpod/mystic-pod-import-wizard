@@ -11,13 +11,16 @@ interface TokenModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTokenAdded: () => void;
+  existingTokensCount?: number; // Number of existing tokens for the selected provider
 }
 
-export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
+export function TokenModal({ isOpen, onClose, onTokenAdded, existingTokensCount = 0 }: TokenModalProps) {
   const [provider, setProvider] = useState<'printify' | 'shopify'>('printify');
   const [token, setToken] = useState('');
   const [name, setName] = useState('');
-  const [isDefault, setIsDefault] = useState(false);
+  // If this will be the first token of this provider, force it to be default
+  const isFirstToken = existingTokensCount === 0;
+  const [isDefault, setIsDefault] = useState(isFirstToken);
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,11 +29,11 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
       // Reset form when modal opens
       setToken('');
       setName('');
-      setIsDefault(false);
+      setIsDefault(isFirstToken); // Set to true if first token
       setError('');
       setProvider('printify');
     }
-  }, [isOpen]);
+  }, [isOpen, isFirstToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,14 +182,26 @@ export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
                   id="isDefault"
                   checked={isDefault}
                   onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
+                  disabled={isFirstToken}
+                  className={`w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mt-0.5 ${
+                    isFirstToken ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 />
                 <div className="ml-2">
-                  <label htmlFor="isDefault" className="text-sm font-medium text-gray-900 cursor-pointer">
+                  <label 
+                    htmlFor="isDefault" 
+                    className={`text-sm font-medium text-gray-900 ${
+                      isFirstToken ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+                    }`}
+                  >
                     Set as default token
                   </label>
                   <p className="text-xs text-gray-500 mt-1">
-                    This token will be used by default for {provider} operations.
+                    {isFirstToken ? (
+                      <>This will be your first {provider} token and will be set as default automatically.</>
+                    ) : (
+                      <>This token will be used by default for {provider} operations.</>
+                    )}
                   </p>
                 </div>
               </div>
