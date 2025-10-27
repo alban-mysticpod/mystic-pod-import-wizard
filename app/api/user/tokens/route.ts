@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabaseAdmin
       .from('api_tokens')
-      .select('id, provider, token_ref, created_at, last_used_at')
+      .select('id, provider, token_ref, name, created_at, last_used_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
