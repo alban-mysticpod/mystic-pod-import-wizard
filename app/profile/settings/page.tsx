@@ -419,6 +419,7 @@ export default function SettingsPage() {
           }}
           token={editingToken}
           onTokenUpdated={handleTokenUpdated}
+          isOnlyTokenOfType={tokens.filter(t => t.provider === editingToken.provider).length === 1}
         />
       )}
     </div>
