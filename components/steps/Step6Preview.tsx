@@ -327,54 +327,7 @@ export function Step6Preview({ folderId, importId, files, selectedShopifyShopId,
           </div>
         )}
 
-        {/* Shopify Push Checkbox */}
-        <div className="relative">
-          <div 
-            className={`flex items-start gap-3 p-4 bg-gray-50 rounded-lg border ${
-              selectedShopifyShopId ? 'border-gray-200' : 'border-gray-300 bg-gray-100'
-            }`}
-            onMouseEnter={() => !selectedShopifyShopId && setShowShopifyTooltip(true)}
-            onMouseLeave={() => setShowShopifyTooltip(false)}
-          >
-            <input
-              type="checkbox"
-              id="pushToShopify"
-              checked={pushToShopify}
-              onChange={(e) => setPushToShopify(e.target.checked)}
-              disabled={!selectedShopifyShopId}
-              className={`mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 ${
-                !selectedShopifyShopId ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-              }`}
-            />
-            <label
-              htmlFor="pushToShopify"
-              className={`text-sm ${
-                selectedShopifyShopId ? 'text-gray-700 cursor-pointer' : 'text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              <span className="font-medium">Push to Shopify</span>
-              <p className="text-xs text-gray-500 mt-1">
-                {selectedShopifyShopId 
-                  ? 'Products will also be created in your Shopify store'
-                  : 'Connect a Shopify shop to enable this option'
-                }
-              </p>
-            </label>
-            {!selectedShopifyShopId && (
-              <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-            )}
-          </div>
-
-          {/* Tooltip for disabled state */}
-          {!selectedShopifyShopId && showShopifyTooltip && (
-            <div className="absolute left-0 -top-16 z-10 w-full max-w-xs bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg">
-              <p>You cannot push to Shopify because no Shopify shop is connected to this import.</p>
-              <div className="absolute left-6 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-4 items-end">
           <div className="flex gap-3">
             {onBack && (
               <Button onClick={onBack} variant="secondary" size="lg" className="inline-flex items-center gap-2">
@@ -392,17 +345,64 @@ export function Step6Preview({ folderId, importId, files, selectedShopifyShopId,
               Refresh Files
             </Button>
           </div>
-          <Button
-            onClick={handleNext}
-            disabled={currentFiles.length === 0 || isLoading}
-            variant="success"
-            size="lg"
-          >
-            {ENABLE_FILE_SELECTION 
-              ? `Import ${selectedFiles.size > 0 ? selectedFiles.size : currentFiles.length} ${selectedFiles.size > 0 ? 'selected' : ''} files to Printify`
-              : `Import ${currentFiles.length} files to Printify`
-            }
-          </Button>
+          <div className="flex flex-col items-end gap-2">
+            {/* Compact Shopify Push Checkbox */}
+            <div className="relative flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="pushToShopify"
+                checked={pushToShopify}
+                onChange={(e) => setPushToShopify(e.target.checked)}
+                disabled={!selectedShopifyShopId}
+                className={`w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 ${
+                  !selectedShopifyShopId ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
+              />
+              <label
+                htmlFor="pushToShopify"
+                className={`text-sm ${
+                  selectedShopifyShopId ? 'text-gray-700 cursor-pointer' : 'text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Push to Shopify
+              </label>
+              
+              {/* Info Icon with Tooltip */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setShowShopifyTooltip(true)}
+                onMouseLeave={() => setShowShopifyTooltip(false)}
+              >
+                <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                
+                {/* Tooltip */}
+                {showShopifyTooltip && (
+                  <div className="absolute right-0 bottom-full mb-2 z-10 w-64 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg">
+                    <p>
+                      {selectedShopifyShopId 
+                        ? 'Products will also be created in your Shopify store after the Printify import'
+                        : 'You cannot push to Shopify because no Shopify shop is connected to this import'
+                      }
+                    </p>
+                    <div className="absolute right-4 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Import Button */}
+            <Button
+              onClick={handleNext}
+              disabled={currentFiles.length === 0 || isLoading}
+              variant="success"
+              size="lg"
+            >
+              {ENABLE_FILE_SELECTION 
+                ? `Import ${selectedFiles.size > 0 ? selectedFiles.size : currentFiles.length} ${selectedFiles.size > 0 ? 'selected' : ''} files to Printify`
+                : `Import ${currentFiles.length} files to Printify`
+              }
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
