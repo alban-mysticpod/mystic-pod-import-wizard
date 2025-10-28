@@ -135,7 +135,7 @@ export function ConnectShopModal({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tokenRef: tokenRef, // The actual API token string
+          apiTokenId: apiTokenId, // Send token ID (security - never send token in clear)
           shopId: String(selectedShop.id),
           userId,
           importId: userId, // Use userId as importId in settings context
