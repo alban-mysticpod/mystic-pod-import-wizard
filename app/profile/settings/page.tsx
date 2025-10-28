@@ -195,7 +195,7 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteStore = async (storeId: string) => {
+  const handleDeleteStore = async (storeId: string, provider: string) => {
     if (!confirm('Are you sure you want to delete this shop?')) {
       return;
     }
@@ -204,7 +204,7 @@ export default function SettingsPage() {
     try {
       const { getUserId } = await import('@/lib/user');
       const userId = getUserId();
-      const response = await fetch(`/api/user/stores?userId=${userId}&storeId=${storeId}`, {
+      const response = await fetch(`/api/user/stores?userId=${userId}&storeId=${storeId}&provider=${provider}`, {
         method: 'DELETE',
       });
 
@@ -562,7 +562,7 @@ export default function SettingsPage() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => handleDeleteStore(store.id)}
+                      onClick={() => handleDeleteStore(store.id, store.provider)}
                       disabled={deletingStoreId === store.id}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
@@ -647,7 +647,7 @@ export default function SettingsPage() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => handleDeleteStore(store.id)}
+                      onClick={() => handleDeleteStore(store.id, store.provider)}
                       disabled={deletingStoreId === store.id}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >

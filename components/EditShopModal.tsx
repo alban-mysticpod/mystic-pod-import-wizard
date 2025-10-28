@@ -54,6 +54,7 @@ export function EditShopModal({
         body: JSON.stringify({
           storeId: shop.id,
           userId,
+          provider: shop.provider,
           name: name.trim(),
           is_default: isDefault,
         }),
