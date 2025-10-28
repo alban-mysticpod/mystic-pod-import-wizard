@@ -126,16 +126,16 @@ export function ConnectShopModal({
         return;
       }
 
-      const response = await fetch('/api/user/stores/save', {
+      // Use the same endpoint as the wizard (choose-shop)
+      // This will call the n8n webhook: /webhook/log-printify-shop-id
+      const response = await fetch('/api/choose-shop', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          tokenRef: apiTokenId,
+          shopId: String(selectedShop.id),
           userId,
-          provider,
-          name: selectedShop.title,
-          store_id: String(selectedShop.id),
-          api_token: apiTokenId,
-          is_default: isDefault || isFirstShop,
+          importId: userId, // Use userId as importId in settings context
         }),
       });
 
