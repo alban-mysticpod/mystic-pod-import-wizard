@@ -108,7 +108,7 @@ export interface Store {
   user_id: string;
   name: string;
   provider: 'printify' | 'shopify';
-  store_id: string; // External store ID (Printify shop_id, etc.)
+  shop_id: string; // External shop ID (Printify shop_id, etc.) - column name in Supabase
   api_token: string; // Foreign key to api_tokens table (column name in Supabase)
   is_default: boolean; // Only one default shop per provider
   created_at: string;

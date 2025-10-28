@@ -532,7 +532,7 @@ export default function SettingsPage() {
                       )}
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
-                    <p className="text-sm text-gray-600">Store ID: {store.store_id}</p>
+                    <p className="text-sm text-gray-600">Store ID: {store.shop_id}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       Created: {formatDate(store.created_at)}
                     </p>
@@ -617,7 +617,7 @@ export default function SettingsPage() {
                       )}
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
-                    <p className="text-sm text-gray-600">Store ID: {store.store_id}</p>
+                    <p className="text-sm text-gray-600">Store ID: {store.shop_id}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       Created: {formatDate(store.created_at)}
                     </p>
