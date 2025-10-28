@@ -132,13 +132,17 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔵 [STEP 9] Validating response structure...');
-    if (!responseData.success) {
-      console.error('❌ [STEP 9] Response validation failed: missing "success: true"');
+    
+    // Validate that response contains required fields: id and name
+    if (!responseData.id || !responseData.name) {
+      console.error('❌ [STEP 9] Response validation failed: missing required fields (id or name)');
       console.error('  - Response keys:', Object.keys(responseData));
+      console.error('  - id:', responseData.id);
+      console.error('  - name:', responseData.name);
       console.error('  - Full response:', responseData);
       return NextResponse.json(
         { 
-          error: 'n8n webhook did not return success',
+          error: 'n8n webhook did not return required fields (id, name)',
           details: responseData 
         },
         { status: 500 }
@@ -146,11 +150,18 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('✅ [STEP 9] Response validated successfully');
+    console.log('  - Store ID:', responseData.id);
+    console.log('  - Store name:', responseData.name);
+    console.log('  - Shop ID:', responseData.shop_id);
 
     console.log('✅ [STEP 10] Shop selection completed successfully!');
     console.log('  - Final response:', responseData);
 
-    return NextResponse.json(responseData);
+    // Return success with store data
+    return NextResponse.json({ 
+      success: true, 
+      store: responseData 
+    });
   } catch (error) {
     console.error('❌ [ERROR] Unexpected error in /api/choose-shop:');
     console.error('  - Error type:', error instanceof Error ? error.constructor.name : typeof error);
