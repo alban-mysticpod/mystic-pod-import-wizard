@@ -22,7 +22,6 @@ interface Step1Props {
     importId: string;
     // New data (from old Step 2)
     apiToken: string;
-    tokenRef: string;
     shops: any[];
     shopId: number;
   }) => void;
@@ -198,7 +197,6 @@ export function Step1DriveFolder({
         importId: validationResult.importId,
         // Data that was previously from Step 2
         apiToken: validatedToken.id,
-        tokenRef: tokenRecord.token_ref,
         shops: [],  // Not used anymore
         shopId: parseInt(selectedStore.shop_id),
       });

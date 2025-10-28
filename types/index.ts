@@ -219,7 +219,6 @@ export interface WizardState {
   sampleFiles: Array<{ id: string; name: string }>;
   importId: string; // ID de l'import pour tracking
   apiToken: string;
-  tokenRef: string;
   shops: PrintifyShop[];
   selectedShopId: number | null;
   selectedBlueprint: Blueprint | null;

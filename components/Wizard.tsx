@@ -21,7 +21,6 @@ const initialState: WizardState = {
   sampleFiles: [],
   importId: '', // ID de l'import pour tracking
   apiToken: '',
-  tokenRef: '',
   shops: [],
   selectedShopId: null,
   selectedBlueprint: null,
@@ -53,7 +52,6 @@ export function Wizard() {
     console.log('🔙 BACK BUTTON: Going back from step', state.currentStep, 'to', state.currentStep - 1);
     console.log('🔙 BACK BUTTON: Current state:', {
       importId: state.importId,
-      tokenRef: state.tokenRef,
       selectedShopId: state.selectedShopId,
       selectedBlueprint: state.selectedBlueprint?.id,
       selectedPreset: state.selectedPreset?.id
@@ -66,7 +64,7 @@ export function Wizard() {
       ...prev,
       currentStep: prev.currentStep - 1,
     }));
-  }, [state.currentStep, state.importId, state.tokenRef, state.selectedShopId, state.selectedBlueprint, state.selectedPreset]);
+  }, [state.currentStep, state.importId, state.selectedShopId, state.selectedBlueprint, state.selectedPreset]);
 
   const handleStep1Next = useCallback((data: {
     folderUrl: string;
@@ -76,7 +74,6 @@ export function Wizard() {
     importId: string;
     // New data (from old Step 2)
     apiToken: string;
-    tokenRef: string;
     shops: any[];
     shopId: number;
   }) => {
@@ -218,7 +215,6 @@ export function Wizard() {
             <Step3ChooseBlueprint
               selectedBlueprint={state.selectedBlueprint}
               importId={state.importId}
-              tokenRef={state.tokenRef}
               onNext={handleStep2Next}
               onPresetNext={handleStep2PresetNext}
               onPrintifyProductNext={handleStep2PrintifyProductNext}

@@ -11,7 +11,6 @@ import { Package, Check, ArrowLeft, Heart, Zap, Download, ExternalLink, Printer,
 interface Step3Props {
   selectedBlueprint: Blueprint | null;
   importId: string; // Ajouter importId pour le webhook
-  tokenRef: string; // Ajouter tokenRef pour déterminer si on affiche la section Printify
   onNext: (blueprint: Blueprint) => void;
   onPresetNext?: (preset: Preset) => void; // Handler pour les presets
   onPrintifyProductNext?: (product: PrintifyProduct) => void; // Handler pour les produits Printify
@@ -24,7 +23,7 @@ const loadingState = new Map<string, boolean>();
 // MVP Feature Flag: Disable manual configuration for MVP
 const ENABLE_MANUAL_CONFIGURATION = false;
 
-export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, onNext, onPresetNext, onPrintifyProductNext, onBack }: Step3Props) {
+export function Step3ChooseBlueprint({ selectedBlueprint, importId, onNext, onPresetNext, onPrintifyProductNext, onBack }: Step3Props) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [selected, setSelected] = useState<Blueprint | null>(selectedBlueprint);
@@ -242,25 +241,17 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
       <div className="p-8">
         {/* Dynamic Title and Description */}
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {hasPresets || tokenRef ? 'Select Configuration' : 'Choose a Blueprint'}
+          Select Configuration
         </h2>
         <p className="text-gray-600 mb-6">
           {ENABLE_MANUAL_CONFIGURATION 
-            ? (hasPresets && tokenRef 
+            ? (hasPresets 
                 ? 'Choose from your saved presets, import from Printify, or configure manually'
-                : hasPresets 
-                  ? 'Use your saved presets or configure manually'
-                  : tokenRef 
-                    ? 'Import from Printify or configure manually'
-                    : 'Select the product template you want to use for your designs'
+                : 'Import from Printify or configure manually'
               )
-            : (hasPresets && tokenRef 
+            : (hasPresets 
                 ? 'Choose from your saved presets or import from Printify'
-                : hasPresets 
-                  ? 'Use your saved presets'
-                  : tokenRef 
-                    ? 'Import from Printify'
-                    : 'Configuration options will be available soon'
+                : 'Import from Printify'
               )
           }
         </p>
@@ -334,22 +325,20 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
               )}
             </div>
 
-            {/* OR Divider - Only show if there are more sections below */}
-            {(tokenRef || blueprints.length > 0) && (
-              <div className="relative mb-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
-                </div>
+            {/* OR Divider - Always show since Printify import is always available */}
+            <div className="relative mb-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
               </div>
-            )}
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500 font-medium">OR</span>
+              </div>
+            </div>
           </>
         )}
 
-        {/* Import from Printify Section - Always show if tokenRef exists */}
-        {tokenRef && (
+        {/* Import from Printify Section - Always available */}
+        {(
           <>
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-4">
