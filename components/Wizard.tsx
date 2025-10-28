@@ -9,6 +9,7 @@ import { Step3ChooseBlueprint } from './steps/Step3ChooseBlueprint';
 import { Step5Mockups as Step4Mockups } from './steps/Step5Mockups';
 import { Step6Preview as Step5Preview } from './steps/Step6Preview';
 import { Step7Process as Step6Process } from './steps/Step7Process';
+import { ShopSelector } from './ShopSelector';
 import { WizardState, PrintifyShop, SupabaseFile, Blueprint, Preset, PrintifyProduct } from '@/types';
 import { clearBlockingCaches } from '@/lib/cache-utils';
 
@@ -165,13 +166,29 @@ export function Wizard() {
 
   return (
     <div>
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          WeScale Import Wizard
-        </h1>
-        <p className="text-xl text-gray-600">
-          Import your designs from Google Drive to Printify
-        </p>
+      {/* Header with Shop Selectors */}
+      <div className="mb-8">
+        {/* Shop Selectors - Top Left */}
+        <div className="flex items-center gap-4 mb-6">
+          <ShopSelector 
+            provider="printify" 
+            disabled={state.currentStep > 1}
+          />
+          <ShopSelector 
+            provider="shopify" 
+            disabled={state.currentStep > 1}
+          />
+        </div>
+
+        {/* Title - Centered */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            WeScale Import Wizard
+          </h1>
+          <p className="text-xl text-gray-600">
+            Import your designs from Google Drive to Printify
+          </p>
+        </div>
       </div>
 
       <Stepper currentStep={state.currentStep} skipStep3={false} />
