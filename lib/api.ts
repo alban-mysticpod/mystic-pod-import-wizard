@@ -54,10 +54,8 @@ export async function verifyPrintifyToken(apiToken: string, userId: string, impo
 }
 
 // Logger le token API sélectionné
-export async function logPrintifyApiToken(apiTokenId: string, importId: string): Promise<void> {
-  const userId = getUserId();
-  
-  const response = await fetch('/api/log-printify-api-token', {
+export async function logPrintifyApiToken(apiTokenId: string, userId: string, importId: string): Promise<void> {
+  const response = await fetch('/api/user/tokens/log', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ apiTokenId, userId, importId }),

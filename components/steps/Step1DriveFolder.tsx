@@ -163,7 +163,7 @@ export function Step1DriveFolder({
       
       // 3. Validate the token (even if already in DB)
       console.log('📡 Step1: Validating token with Printify...');
-      const { verifyPrintifyToken } = await import('@/lib/api');
+      const { verifyPrintifyToken, logPrintifyApiToken, chooseShop } = await import('@/lib/api');
       const validatedToken = await verifyPrintifyToken(
         tokenRecord.token_ref, 
         userId, 
@@ -172,9 +172,13 @@ export function Step1DriveFolder({
       );
       console.log('✅ Step1: Token validated');
       
-      // 4. Log the shop selection (link shop ↔ import)
+      // 4. Log the token usage (update last_used_at)
+      console.log('📡 Step1: Logging token usage...');
+      await logPrintifyApiToken(validatedToken.id, userId, validationResult.importId);
+      console.log('✅ Step1: Token usage logged');
+      
+      // 5. Log the shop selection (link shop ↔ import)
       console.log('📡 Step1: Logging shop selection...');
-      const { chooseShop } = await import('@/lib/api');
       await chooseShop(
         validatedToken.id,  // apiTokenId (UUID, not the token string)
         selectedStore.shop_id,  // shopId (Printify shop ID)
@@ -184,7 +188,7 @@ export function Step1DriveFolder({
       );
       console.log('✅ Step1: Shop selection logged');
       
-      // 5. Pass to next step (skip Step 2, go directly to Step 3)
+      // 6. Pass to next step (skip Step 2, go directly to Step 3)
       console.log('✅ Step1: All setup complete, moving to blueprint selection');
       onNext({
         folderUrl: url,
