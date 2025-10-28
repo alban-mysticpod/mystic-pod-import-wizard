@@ -208,18 +208,6 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
               </div>
             )}
 
-            {/* MVP: Simple header without selection controls */}
-            {!ENABLE_FILE_SELECTION && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900">
-                  {currentFiles.length} designs ready to import
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  All designs will be imported to your Printify shop
-                </p>
-              </div>
-            )}
-
             {/* Design Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
               {currentFiles.map((file, index) => {
@@ -302,17 +290,16 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-start">
                 <Upload className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium text-blue-900 mb-1">Ready to import:</p>
-                  <p className="text-blue-700">
+                <div>
+                  <p className="font-medium text-blue-900 text-base mb-1">Ready to import:</p>
+                  <p className="text-sm text-blue-700">
                     {ENABLE_FILE_SELECTION 
                       ? (selectedFiles.size > 0 
-                          ? `${formatFileCount(selectedFiles.size)} selected file${selectedFiles.size !== 1 ? 's' : ''}`
-                          : formatFileCount(currentFiles.length)
+                          ? `${selectedFiles.size} file${selectedFiles.size !== 1 ? 's' : ''} will be uploaded`
+                          : `${currentFiles.length} file${currentFiles.length !== 1 ? 's' : ''} will be uploaded`
                         )
-                      : formatFileCount(currentFiles.length)
-                    } will be uploaded to your Printify shop.
-                    This process may take a few minutes depending on file sizes.
+                      : `${currentFiles.length} file${currentFiles.length !== 1 ? 's' : ''} will be uploaded`
+                    } to your Printify shop. This process may take a few minutes depending on file sizes.
                   </p>
                 </div>
               </div>
