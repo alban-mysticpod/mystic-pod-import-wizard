@@ -3,7 +3,7 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { Input } from './Input';
 import { Button } from './Button';
-import { X } from 'lucide-react';
+import { X, Info } from 'lucide-react';
 
 interface Shop {
   id: string | number;
@@ -33,6 +33,8 @@ export function ConnectShopModal({
   const [step, setStep] = useState<ModalStep>(ModalStep.ENTER_TOKEN);
   const [apiToken, setApiToken] = useState('');
   const [tokenName, setTokenName] = useState('');
+  const [shopUrl, setShopUrl] = useState(''); // For Shopify only
+  const [showShopUrlInfo, setShowShopUrlInfo] = useState(false); // For tooltip
   const [apiTokenId, setApiTokenId] = useState('');
   const [availableShops, setAvailableShops] = useState<Shop[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
@@ -47,6 +49,8 @@ export function ConnectShopModal({
       setStep(ModalStep.ENTER_TOKEN);
       setApiToken('');
       setTokenName('');
+      setShopUrl('');
+      setShowShopUrlInfo(false);
       setApiTokenId('');
       setAvailableShops([]);
       setSelectedShopId(null);
@@ -69,33 +73,66 @@ export function ConnectShopModal({
       const { getUserId } = await import('@/lib/user');
       const userId = getUserId();
 
-      const response = await fetch('/api/user/stores/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider,
-          apiToken,
-          tokenName: tokenName.trim() || null,
-          userId,
-        }),
-      });
+      // For Shopify, use different endpoint
+      if (provider === 'shopify') {
+        const response = await fetch('https://n8n.srv874829.hstgr.cloud/webhook/verify-shopify-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            apiToken,
+            shopUrl,
+            tokenName: tokenName.trim() || null,
+            userId,
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to validate token');
-        return;
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          setError(errorData.error || 'Failed to validate Shopify token');
+          return;
+        }
+
+        const data = await response.json();
+        
+        // For Shopify, assuming n8n returns { success: true, apiTokenId, shop }
+        if (data.success) {
+          setApiTokenId(data.apiTokenId);
+          setAvailableShops([{ id: data.shop?.id || shopUrl, title: data.shop?.title || shopUrl }]);
+          setSelectedShopId(data.shop?.id || shopUrl);
+          setStep(ModalStep.SELECT_SHOP);
+        } else {
+          setError('Failed to connect Shopify shop');
+        }
+      } else {
+        // For Printify, use existing endpoint
+        const response = await fetch('/api/user/stores/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            provider,
+            apiToken,
+            tokenName: tokenName.trim() || null,
+            userId,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          setError(errorData.error || 'Failed to validate token');
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (!data.shops || data.shops.length === 0) {
+          setError('No shops found for this account');
+          return;
+        }
+
+        setApiTokenId(data.apiTokenId);
+        setAvailableShops(data.shops);
+        setStep(ModalStep.SELECT_SHOP);
       }
-
-      const data = await response.json();
-      
-      if (!data.shops || data.shops.length === 0) {
-        setError('No shops found for this account');
-        return;
-      }
-
-      setApiTokenId(data.apiTokenId);
-      setAvailableShops(data.shops);
-      setStep(ModalStep.SELECT_SHOP);
     } catch (err) {
       console.error('Error validating token:', err);
       setError('Failed to validate token');
@@ -196,6 +233,57 @@ export function ConnectShopModal({
                 helperText="Give this token a memorable name to identify it later"
                 required
               />
+
+              {/* Shop URL field - only for Shopify */}
+              {provider === 'shopify' && (
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <label htmlFor="shopUrl" className="block text-sm font-medium text-gray-700">
+                      Shop URL
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowShopUrlInfo(!showShopUrlInfo)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      title="How to find your Shop URL"
+                    >
+                      <Info className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <Input
+                    id="shopUrl"
+                    type="text"
+                    value={shopUrl}
+                    onChange={(e) => setShopUrl(e.target.value)}
+                    placeholder="e.g., your-store.myshopify.com"
+                    helperText="Your Shopify store URL"
+                    required
+                  />
+
+                  {/* Info tooltip with image */}
+                  {showShopUrlInfo && (
+                    <div className="mt-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2 mb-2">
+                        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-blue-900 mb-1">
+                            How to find your Shop URL
+                          </p>
+                          <p className="text-sm text-blue-700 mb-3">
+                            You can find your shop URL in your Shopify admin dashboard:
+                          </p>
+                        </div>
+                      </div>
+                      <img
+                        src="https://pub-b841d246707840cdb0446d5cf3114d7b.r2.dev/.Capture%20d%E2%80%99e%CC%81cran%202025-10-28%20a%CC%80%2016.37.35.png"
+                        alt="How to find Shopify Shop URL"
+                        className="w-full rounded border border-blue-200"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <Input
                 label={`${provider === 'printify' ? 'Printify' : 'Shopify'} API Token`}
