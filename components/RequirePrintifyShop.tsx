@@ -56,14 +56,14 @@ export function RequirePrintifyShop({ children }: RequirePrintifyShopProps) {
 
   if (!hasPrintifyShop) {
     return (
-      <div className="relative">
+      <>
         {/* Blurred/disabled content */}
         <div className="pointer-events-none blur-sm opacity-40">
           {children}
         </div>
 
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        {/* Full-screen overlay (fixed positioning to cover entire viewport except sidebar) */}
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-8 max-w-md mx-4">
             <div className="flex flex-col items-center text-center">
               {/* Icon */}
@@ -106,7 +106,7 @@ export function RequirePrintifyShop({ children }: RequirePrintifyShopProps) {
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
