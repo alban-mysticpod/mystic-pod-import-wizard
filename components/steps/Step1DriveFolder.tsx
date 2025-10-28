@@ -36,7 +36,8 @@ export function Step1DriveFolder({
   onNext 
 }: Step1Props) {
   const [url, setUrl] = useState(folderUrl);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isValidating, setIsValidating] = useState(false); // Loading state for "Revalidate Folder"
+  const [isContinuing, setIsContinuing] = useState(false); // Loading state for "Continue"
   const [error, setError] = useState('');
   const [validationResult, setValidationResult] = useState<{
     folderId: string;
@@ -58,7 +59,7 @@ export function Step1DriveFolder({
       return;
     }
 
-    setIsLoading(true);
+    setIsValidating(true);
     setError('');
 
     try {
@@ -104,7 +105,7 @@ export function Step1DriveFolder({
       const errorMessage = err instanceof Error ? err.message : 'Failed to validate folder. Please check your URL and try again.';
       setError(errorMessage);
     } finally {
-      setIsLoading(false);
+      setIsValidating(false);
     }
   };
 
@@ -119,7 +120,7 @@ export function Step1DriveFolder({
       return;
     }
 
-    setIsLoading(true);
+    setIsContinuing(true);
     setError('');
 
     try {
@@ -254,7 +255,7 @@ export function Step1DriveFolder({
       const errorMessage = err instanceof Error ? err.message : 'Failed to setup shop';
       setError(errorMessage);
     } finally {
-      setIsLoading(false);
+      setIsContinuing(false);
     }
   };
 
@@ -289,13 +290,18 @@ export function Step1DriveFolder({
         <div className="flex justify-end space-x-3">
           <Button
             onClick={handleValidate}
-            loading={isLoading}
-            disabled={!url.trim()}
+            loading={isValidating}
+            disabled={!url.trim() || isValidating || isContinuing}
           >
             {validationResult ? 'Re-validate Folder' : 'Validate Folder'}
           </Button>
           {validationResult && (
-            <Button onClick={handleNext} variant="success">
+            <Button 
+              onClick={handleNext} 
+              variant="success"
+              loading={isContinuing}
+              disabled={isContinuing || isValidating}
+            >
               Continue
             </Button>
           )}
