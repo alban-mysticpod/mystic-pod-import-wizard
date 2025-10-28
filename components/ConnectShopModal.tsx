@@ -34,7 +34,6 @@ export function ConnectShopModal({
   const [apiToken, setApiToken] = useState('');
   const [tokenName, setTokenName] = useState('');
   const [apiTokenId, setApiTokenId] = useState('');
-  const [tokenRef, setTokenRef] = useState(''); // The actual API token string
   const [availableShops, setAvailableShops] = useState<Shop[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
   const isFirstShop = existingShopsCount === 0;
@@ -96,7 +95,6 @@ export function ConnectShopModal({
       }
 
       setApiTokenId(data.apiTokenId);
-      setTokenRef(data.tokenRef); // Store the actual token string
       setAvailableShops(data.shops);
       setStep(ModalStep.SELECT_SHOP);
     } catch (err) {
