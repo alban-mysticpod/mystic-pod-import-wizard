@@ -10,7 +10,6 @@ interface PrintifyProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectProduct: (product: PrintifyProduct) => void;
-  tokenRef: string;
   importId: string;
 }
 
@@ -18,7 +17,6 @@ export function PrintifyProductModal({
   isOpen, 
   onClose, 
   onSelectProduct, 
-  tokenRef, 
   importId 
 }: PrintifyProductModalProps) {
   const [products, setProducts] = useState<PrintifyProduct[]>([]);
@@ -35,16 +33,15 @@ export function PrintifyProductModal({
   } | null>(null);
 
   useEffect(() => {
-    if (isOpen && tokenRef && importId) {
+    if (isOpen && importId) {
       loadProducts();
     }
-  }, [isOpen, tokenRef, importId]);
+  }, [isOpen, importId]);
 
   const loadProducts = async (page: number = 1, append: boolean = false) => {
     console.log('🔄 PrintifyModal: loadProducts called', {
       page,
       append,
-      tokenRef: tokenRef?.substring(0, 10) + '...',
       importId,
       isOpen,
       currentProductsCount: products.length
@@ -61,7 +58,7 @@ export function PrintifyProductModal({
 
     try {
       console.log(`🔄 Loading Printify products page ${page}...`);
-      const data = await listPrintifyProducts(tokenRef, importId, page);
+      const data = await listPrintifyProducts(importId, page);
       console.log('✅ Printify products loaded:', data);
       
       if (data.products && Array.isArray(data.products)) {

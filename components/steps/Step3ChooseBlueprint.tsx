@@ -364,7 +364,7 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
               <div className="text-center">
                 <Button
                   onClick={() => {
-                    console.log('🔍 Opening Printify modal - tokenRef:', tokenRef, 'importId:', importId);
+                    console.log('🔍 Opening Printify modal - importId:', importId);
                     setShowPrintifyModal(true);
                   }}
                   variant="secondary"
@@ -543,7 +543,6 @@ export function Step3ChooseBlueprint({ selectedBlueprint, importId, tokenRef, on
             onPrintifyProductNext(product);
           }
         }}
-        tokenRef={tokenRef}
         importId={importId}
       />
     </Card>

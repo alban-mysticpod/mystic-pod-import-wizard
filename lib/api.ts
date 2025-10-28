@@ -305,12 +305,12 @@ export async function selectPrintProvider(printProviderId: number, importId: str
   return response.json();
 }
 
-export async function listPrintifyProducts(tokenRef: string, importId: string, page: number = 1): Promise<ListPrintifyProductsResponse> {
+export async function listPrintifyProducts(importId: string, page: number = 1): Promise<ListPrintifyProductsResponse> {
   const userId = getUserId();
   const response = await fetch('/api/list-printify-products', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tokenRef, userId, importId, page }),
+    body: JSON.stringify({ userId, importId, page }),
   });
 
   if (!response.ok) {
