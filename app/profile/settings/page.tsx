@@ -211,8 +211,9 @@ export default function SettingsPage() {
   };
 
   const handleShopConnected = async () => {
-    // Reload stores after connecting a new one
-    await loadStores();
+    // Reload stores and tokens after connecting a new shop
+    // (tokens are reloaded because a new token may have been created)
+    await Promise.all([loadStores(), loadTokens()]);
   };
 
   const handleEditShop = (shop: Store) => {
