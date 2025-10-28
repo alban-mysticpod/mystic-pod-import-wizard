@@ -48,7 +48,6 @@ export function ConnectShopModal({
       setApiToken('');
       setTokenName('');
       setApiTokenId('');
-      setTokenRef('');
       setAvailableShops([]);
       setSelectedShopId(null);
       setIsDefault(isFirstShop);
