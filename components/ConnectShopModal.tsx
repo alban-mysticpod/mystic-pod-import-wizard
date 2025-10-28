@@ -94,11 +94,12 @@ export function ConnectShopModal({
 
         const data = await response.json();
         
-        // For Shopify, assuming n8n returns { success: true, apiTokenId, shop }
-        if (data.success) {
-          setApiTokenId(data.apiTokenId);
-          setAvailableShops([{ id: data.shop?.id || shopUrl, title: data.shop?.title || shopUrl }]);
-          setSelectedShopId(data.shop?.id || shopUrl);
+        // n8n returns the store object directly:
+        // { id, user_id, provider, external_id, name, api_token, is_default, created_at, shop_id }
+        if (data.id && data.shop_id) {
+          setApiTokenId(data.api_token); // UUID of the API token
+          setAvailableShops([{ id: data.shop_id, title: data.name || shopUrl }]);
+          setSelectedShopId(data.shop_id);
           setStep(ModalStep.SELECT_SHOP);
         } else {
           setError('Failed to connect Shopify shop');
