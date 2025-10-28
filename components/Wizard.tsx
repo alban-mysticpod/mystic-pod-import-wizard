@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Stepper } from './Stepper';
 import { Step1DriveFolder } from './steps/Step1DriveFolder';
-import { Step2ChooseShop } from './steps/Step2ChooseShop';
+// Step2ChooseShop REMOVED - integrated into Step1
 import { Step3ChooseBlueprint } from './steps/Step3ChooseBlueprint';
 // Step4ChoosePrintProvider is now integrated into Step3 for MVP
 import { Step5Mockups as Step4Mockups } from './steps/Step5Mockups';
@@ -74,35 +74,32 @@ export function Wizard() {
     fileCount: number;
     sampleFiles: Array<{ id: string; name: string }>;
     importId: string;
-  }) => {
-    updateState({
-      ...data,
-      currentStep: 2,
-    });
-  }, [updateState]);
-
-  const handleStep2Next = useCallback((data: {
+    // New data (from old Step 2)
     apiToken: string;
     tokenRef: string;
-    shops: PrintifyShop[];
+    shops: any[];
     shopId: number;
   }) => {
+    console.log('🎯 Step1 → Step2 (ex-Step3): Shop setup complete, moving to blueprint selection');
     updateState({
       ...data,
       selectedShopId: data.shopId,
-      currentStep: 3,
+      currentStep: 2, // Go directly to Step2 (which is the old Step3)
     });
   }, [updateState]);
 
-  const handleStep3Next = useCallback((blueprint: Blueprint) => {
+  // handleStep2Next REMOVED - Step2ChooseShop no longer exists
+  // Step2 is now Choose Blueprint (was Step3)
+
+  const handleStep2Next = useCallback((blueprint: Blueprint) => {
     updateState({
       selectedBlueprint: blueprint,
-      currentStep: 4,
+      currentStep: 3, // Renumbered: was 4, now 3
     });
   }, [updateState]);
 
-  const handleStep3PresetNext = useCallback((preset: Preset) => {
-    // Quand un preset est sélectionné, on skip l'étape 4 et va directement au step 5 (mockups)
+  const handleStep2PresetNext = useCallback((preset: Preset) => {
+    // Quand un preset est sélectionné, on skip l'étape 3 et va directement au step 3 (mockups)
     // On configure automatiquement le blueprint et print provider depuis le preset
     updateState({
       selectedBlueprint: { 
@@ -119,12 +116,12 @@ export function Wizard() {
       // Stocker le preset sélectionné pour l'utiliser plus tard
       selectedPreset: preset,
       shouldGenerateMockups: true, // Marquer qu'on doit générer les mockups
-      currentStep: 4, // Aller aux mockups (renumbered from 5 to 4)
+      currentStep: 3, // Renumbered: was 4, now 3 (Mockups)
     });
   }, [updateState]);
 
-  const handleStep3PrintifyProductNext = useCallback((product: PrintifyProduct) => {
-    // Quand un produit Printify est sélectionné, on skip l'étape 4 et va directement au step 5 (mockups)
+  const handleStep2PrintifyProductNext = useCallback((product: PrintifyProduct) => {
+    // Quand un produit Printify est sélectionné, on skip l'étape 3 et va directement au step 3 (mockups)
     // On configure automatiquement le blueprint et print provider depuis le produit
     updateState({
       selectedBlueprint: { 
@@ -141,26 +138,24 @@ export function Wizard() {
       // Stocker le produit Printify sélectionné pour l'utiliser plus tard
       selectedPrintifyProduct: product,
       shouldGenerateMockups: true, // Marquer qu'on doit générer les mockups
-      currentStep: 4, // Aller aux mockups (renumbered from 5 to 4)
+      currentStep: 3, // Renumbered: was 4, now 3 (Mockups)
     });
   }, [updateState]);
 
-  // handleStep4Next removed - Step 4 is now integrated into Step 3
-
-  // Renamed from handleStep5Next to handleStep4Next (Mockups)
-  const handleStep4Next = useCallback((files: SupabaseFile[]) => {
+  // Step3 = Mockups (was Step4, was Step5)
+  const handleStep3Next = useCallback((files: SupabaseFile[]) => {
     updateState({
       files,
       shouldGenerateMockups: false, // Remettre à false après utilisation
-      currentStep: 5, // Aller au preview final (renumbered from 6 to 5)
+      currentStep: 4, // Renumbered: was 5, now 4 (Preview)
     });
   }, [updateState]);
 
-  // Renamed from handleStep6Next to handleStep5Next (Preview)
-  const handleStep5Next = useCallback((files: SupabaseFile[]) => {
+  // Step4 = Preview (was Step5, was Step6)
+  const handleStep4Next = useCallback((files: SupabaseFile[]) => {
     updateState({
       files,
-      currentStep: 6, // Aller au process final (renumbered from 7 to 6)
+      currentStep: 5, // Renumbered: was 6, now 5 (Process/Final)
     });
   }, [updateState]);
 
@@ -217,51 +212,42 @@ export function Wizard() {
             />
           )}
 
+          {/* Step2ChooseShop REMOVED - integrated into Step1 */}
+
           {state.currentStep === 2 && (
-            <Step2ChooseShop
-              selectedShopId={state.selectedShopId}
+            <Step3ChooseBlueprint
+              selectedBlueprint={state.selectedBlueprint}
               importId={state.importId}
+              tokenRef={state.tokenRef}
               onNext={handleStep2Next}
+              onPresetNext={handleStep2PresetNext}
+              onPrintifyProductNext={handleStep2PrintifyProductNext}
               onBack={handleBack}
             />
           )}
 
           {state.currentStep === 3 && (
-            <Step3ChooseBlueprint
-              selectedBlueprint={state.selectedBlueprint}
-              importId={state.importId}
-              tokenRef={state.tokenRef}
-              onNext={handleStep3Next}
-              onPresetNext={handleStep3PresetNext}
-              onPrintifyProductNext={handleStep3PrintifyProductNext}
-              onBack={handleBack}
-            />
-          )}
-
-          {/* Step 4 (Choose Print Provider) is now integrated into Step 3 for MVP */}
-
-          {state.currentStep === 4 && (
             <Step4Mockups
               folderId={state.folderId}
               importId={state.importId}
               files={state.files}
               shouldGenerateMockups={state.shouldGenerateMockups}
+              onNext={handleStep3Next}
+              onBack={handleBack}
+            />
+          )}
+
+          {state.currentStep === 4 && (
+            <Step5Preview
+              folderId={state.folderId}
+              importId={state.importId}
+              files={state.files}
               onNext={handleStep4Next}
               onBack={handleBack}
             />
           )}
 
-          {state.currentStep === 5 && (
-            <Step5Preview
-              folderId={state.folderId}
-              importId={state.importId}
-              files={state.files}
-              onNext={handleStep5Next}
-              onBack={handleBack}
-            />
-          )}
-
-          {state.currentStep === 6 && state.selectedShopId && (
+          {state.currentStep === 5 && state.selectedShopId && (
             <Step6Process
               folderId={state.folderId}
               tokenRef={state.tokenRef}
