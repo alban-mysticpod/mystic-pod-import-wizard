@@ -83,6 +83,7 @@ export function ConnectShopModal({
             shopUrl,
             tokenName: tokenName.trim() || null,
             userId,
+            isDefault, // Include default flag for Shopify
           }),
         });
 
@@ -319,6 +320,34 @@ export function ConnectShopModal({
                   </a>
                 )}
               </p>
+
+              {/* Set as default checkbox */}
+              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <input
+                  type="checkbox"
+                  id="setAsDefault"
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                  disabled={isFirstShop}
+                  className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <label
+                  htmlFor="setAsDefault"
+                  className={`text-sm ${isFirstShop ? 'text-gray-500' : 'text-gray-700 cursor-pointer'}`}
+                >
+                  <span className="font-medium">Set as default {provider} shop</span>
+                  {isFirstShop && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      This shop will be set as default automatically because it's your first {provider} shop.
+                    </p>
+                  )}
+                  {!isFirstShop && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Setting this as default will unset other {provider} shops as default.
+                    </p>
+                  )}
+                </label>
+              </div>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button
