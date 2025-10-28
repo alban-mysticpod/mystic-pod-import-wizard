@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 // Helper function to get the correct table name based on provider
 function getStoreTable(provider: string): string {
-  return provider === 'shopify' ? 'shopify_stores' : 'stores';
+  return provider === 'shopify' ? 'shopify_stores' : 'printify_shops';
 }
 
 /**
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch from both tables and merge results
     const printifyPromise = supabaseAdmin
-      .from('stores')
+      .from('printify_shops')
       .select('id, name, provider, shop_id, api_token, is_default, created_at')
       .eq('user_id', userId)
       .eq('provider', 'printify');

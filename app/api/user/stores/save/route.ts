@@ -1,28 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
+// Helper function to get the correct table name based on provider
+function getStoreTable(provider: string): string {
+  return provider === 'shopify' ? 'shopify_stores' : 'printify_shops';
+}
+
 /**
  * POST /api/user/stores/save
- * Saves a selected shop to the stores table
- * Body: { userId, provider, name, store_id, api_token, is_default }
+ * Saves a selected shop to the appropriate table (printify_shops or shopify_stores)
+ * Body: { userId, provider, name, shop_id, api_token, is_default }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, provider, name, store_id, api_token, is_default } = body;
+    const { userId, provider, name, shop_id, api_token, is_default } = body;
 
-    if (!userId || !provider || !name || !store_id || !api_token) {
+    if (!userId || !provider || !name || !shop_id || !api_token) {
       return NextResponse.json(
-        { error: 'userId, provider, name, store_id, and api_token are required' },
+        { error: 'userId, provider, name, shop_id, and api_token are required' },
         { status: 400 }
       );
     }
 
-    console.log('💾 Saving shop:', name, 'for user:', userId);
+    console.log('💾 Saving shop:', name, 'for user:', userId, 'provider:', provider);
+
+    const tableName = getStoreTable(provider);
 
     // Check if this is the first shop of this provider
     const { data: existingStores, error: checkError } = await supabaseAdmin
-      .from('stores')
+      .from(tableName)
       .select('id')
       .eq('user_id', userId)
       .eq('provider', provider);
@@ -46,7 +53,7 @@ export async function POST(request: NextRequest) {
       console.log('🔄 Unsetting other defaults for provider:', provider);
       
       const { error: unsetError } = await supabaseAdmin
-        .from('stores')
+        .from(tableName)
         .update({ is_default: false })
         .eq('user_id', userId)
         .eq('provider', provider);
@@ -59,12 +66,12 @@ export async function POST(request: NextRequest) {
 
     // Insert the new shop
     const { data, error } = await supabaseAdmin
-      .from('stores')
+      .from(tableName)
       .insert({
         user_id: userId,
         provider,
         name,
-        store_id,
+        shop_id,
         api_token,
         is_default: shouldBeDefault,
       })
@@ -79,7 +86,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('✅ Shop saved successfully:', data.id);
+    console.log('✅ Shop saved successfully to', tableName, ':', data.id);
     return NextResponse.json({ success: true, store: data });
   } catch (error) {
     console.error('❌ Unexpected error:', error);
