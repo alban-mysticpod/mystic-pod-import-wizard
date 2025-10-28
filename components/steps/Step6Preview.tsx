@@ -364,7 +364,7 @@ export function Step6Preview({ folderId, importId, files, selectedShopifyShopId,
                   selectedShopifyShopId ? 'text-gray-700 cursor-pointer' : 'text-gray-500 cursor-not-allowed'
                 }`}
               >
-                Push to Shopify
+                Publish products to Shopify after import
               </label>
               
               {/* Info Icon with Tooltip */}

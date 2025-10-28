@@ -176,8 +176,8 @@ export function Step1DriveFolder({
       await logPrintifyApiToken(validatedToken.id, userId, validationResult.importId);
       console.log('✅ Step1: Token usage logged');
       
-      // 5. Log the shop selection (link shop ↔ import)
-      console.log('📡 Step1: Logging shop selection...');
+      // 5. Log the Printify shop selection (link shop ↔ import)
+      console.log('📡 Step1: Logging Printify shop selection...');
       await chooseShop(
         validatedToken.id,  // apiTokenId (UUID, not the token string)
         selectedStore.shop_id,  // shopId (Printify shop ID)
@@ -185,9 +185,36 @@ export function Step1DriveFolder({
         validationResult.importId,
         selectedStore.is_default  // isDefault
       );
-      console.log('✅ Step1: Shop selection logged');
+      console.log('✅ Step1: Printify shop selection logged');
       
-      // 6. Trigger asset creation (download files from Google Drive to our server)
+      // 6. Log the Shopify store (if selected)
+      if (selectedShopifyShopId) {
+        console.log('📡 Step1: Logging Shopify store selection...');
+        try {
+          const shopifyStoreResponse = await fetch('https://n8n.srv874829.hstgr.cloud/webhook/log-shopify-store', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              storeId: selectedShopifyShopId, // Supabase UUID of the Shopify store
+              userId: userId,
+              importId: validationResult.importId,
+            }),
+          });
+          
+          if (shopifyStoreResponse.ok) {
+            console.log('✅ Step1: Shopify store logged successfully');
+          } else {
+            console.warn('⚠️ Step1: Shopify store logging failed, but continuing anyway');
+          }
+        } catch (shopifyErr) {
+          // Non-blocking: log error but continue
+          console.warn('⚠️ Step1: Shopify store logging error:', shopifyErr);
+        }
+      } else {
+        console.log('ℹ️ Step1: No Shopify store selected, skipping Shopify logging');
+      }
+      
+      // 7. Trigger asset creation (download files from Google Drive to our server)
       console.log('📡 Step1: Triggering asset creation...');
       try {
         const assetResponse = await fetch('https://n8n.srv874829.hstgr.cloud/webhook/trigger-asset-creation', {
@@ -209,7 +236,7 @@ export function Step1DriveFolder({
         console.warn('⚠️ Step1: Asset creation trigger error:', assetErr);
       }
       
-      // 7. Pass to next step (skip Step 2, go directly to Step 3)
+      // 8. Pass to next step (skip Step 2, go directly to Step 3)
       console.log('✅ Step1: All setup complete, moving to blueprint selection');
       onNext({
         folderUrl: url,
