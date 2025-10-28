@@ -138,7 +138,7 @@ export function ConnectShopModal({
           apiTokenId: apiTokenId, // Send token ID (security - never send token in clear)
           shopId: String(selectedShop.id),
           userId,
-          importId: userId, // Use userId as importId in settings context
+          isDefault: isDefault, // Set as default if checked
         }),
       });
 
