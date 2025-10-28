@@ -58,12 +58,13 @@ export async function POST(request: NextRequest) {
       // Step 2: Fetch shops from Printify
       console.log('🚀 Step 2: Fetching shops from Printify...');
       
-      const shopsWebhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/list-printify-shops';
+      const shopsWebhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/list-shops';
       const shopsPayload = {
-        apiToken,
         userId,
         importId: userId,
       };
+
+      console.log('🏪 Calling list-shops webhook with payload:', shopsPayload);
 
       const shopsResponse = await fetch(shopsWebhookUrl, {
         method: 'POST',
