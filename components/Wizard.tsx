@@ -39,6 +39,10 @@ const initialState: WizardState = {
 
 export function Wizard() {
   const [state, setState] = useState<WizardState>(initialState);
+  
+  // Track selected shops from ShopSelector
+  const [selectedPrintifyShopId, setSelectedPrintifyShopId] = useState<string | null>(null);
+  const [selectedShopifyShopId, setSelectedShopifyShopId] = useState<string | null>(null);
 
   const updateState = useCallback((updates: Partial<WizardState>) => {
     setState(prev => ({ ...prev, ...updates }));
@@ -173,10 +177,18 @@ export function Wizard() {
           <ShopSelector 
             provider="printify" 
             disabled={state.currentStep > 1}
+            onShopChange={(shopId) => {
+              console.log('🏪 Printify shop selected:', shopId);
+              setSelectedPrintifyShopId(shopId);
+            }}
           />
           <ShopSelector 
             provider="shopify" 
             disabled={state.currentStep > 1}
+            onShopChange={(shopId) => {
+              console.log('🏪 Shopify shop selected:', shopId);
+              setSelectedShopifyShopId(shopId);
+            }}
           />
         </div>
 
@@ -199,6 +211,8 @@ export function Wizard() {
               folderUrl={state.folderUrl}
               fileCount={state.fileCount}
               sampleFiles={state.sampleFiles}
+              selectedPrintifyShopId={selectedPrintifyShopId}
+              selectedShopifyShopId={selectedShopifyShopId}
               onNext={handleStep1Next}
             />
           )}
