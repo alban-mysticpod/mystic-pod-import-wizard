@@ -40,9 +40,17 @@ export function ShopSelector({ provider, disabled = false, onShopChange }: ShopS
         if (defaultStore) {
           console.log(`✅ ShopSelector [${provider}]: Auto-selecting default shop:`, defaultStore.name);
           setSelectedStore(defaultStore);
+          // Notify parent component immediately
+          if (onShopChange) {
+            onShopChange(defaultStore.id);
+          }
         } else if (providerStores.length > 0) {
           console.log(`⚠️ ShopSelector [${provider}]: No default found, selecting first shop:`, providerStores[0].name);
           setSelectedStore(providerStores[0]);
+          // Notify parent component immediately
+          if (onShopChange) {
+            onShopChange(providerStores[0].id);
+          }
         } else {
           console.log(`❌ ShopSelector [${provider}]: No shops available`);
         }

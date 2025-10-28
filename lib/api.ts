@@ -39,9 +39,7 @@ export async function validateDriveFolder(folderUrl: string): Promise<DriveValid
 }
 
 // Vérifier un token Printify - retourne maintenant un record apiToken
-export async function verifyPrintifyToken(apiToken: string, importId: string, name?: string): Promise<{ id: string; token_ref: string }> {
-  const userId = getUserId();
-  
+export async function verifyPrintifyToken(apiToken: string, userId: string, importId: string, name?: string): Promise<{ id: string; token_ref: string }> {
   const response = await fetch('/api/validate-token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -107,17 +105,22 @@ export async function testPrintifyToken(apiToken: string, importId: string): Pro
   return response.json();
 }
 
-export async function chooseShop(tokenRef: string, shopId: number, importId: string): Promise<{ ok: true }> {
-  const userId = getUserId(); // Utiliser l'ID utilisateur existant
-  
+export async function chooseShop(
+  apiTokenId: string, 
+  shopId: string, 
+  userId: string, 
+  importId: string, 
+  isDefault: boolean
+): Promise<{ success: true; store: any }> {
   const response = await fetch(API_BASE.sessionChooseShop, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tokenRef, shopId, userId, importId }),
+    body: JSON.stringify({ apiTokenId, shopId, userId, isDefault }),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to choose shop: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({ error: response.statusText }));
+    throw new Error(`Failed to choose shop: ${errorData.error || response.statusText}`);
   }
 
   return response.json();
