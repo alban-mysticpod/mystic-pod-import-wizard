@@ -84,9 +84,10 @@ export async function POST(request: NextRequest) {
       const shopsData = await shopsResponse.json();
       console.log('✅ Fetched shops:', shopsData.shops?.length || 0);
 
-      // Return apiTokenId and shops
+      // Return apiTokenId, tokenRef (for choose-shop endpoint), and shops
       return NextResponse.json({
         apiTokenId: data.id,
+        tokenRef: apiToken, // The actual API token string
         shops: shopsData.shops || [],
       });
     } else if (provider === 'shopify') {
