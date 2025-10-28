@@ -6,6 +6,8 @@ import { Card } from '@/components/Card';
 import { PresetModal } from '@/components/PresetModal';
 import { TokenModal } from '@/components/TokenModal';
 import { EditTokenModal } from '@/components/EditTokenModal';
+import { ConnectShopModal } from '@/components/ConnectShopModal';
+import { EditShopModal } from '@/components/EditShopModal';
 import { ApiToken, Store } from '@/types';
 import { Key, Plus, Trash2, Layers, Star, Edit2, Store as StoreIcon } from 'lucide-react';
 
@@ -33,6 +35,10 @@ export default function SettingsPage() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isEditTokenModalOpen, setIsEditTokenModalOpen] = useState(false);
   const [editingToken, setEditingToken] = useState<ApiToken | null>(null);
+  const [isConnectShopModalOpen, setIsConnectShopModalOpen] = useState(false);
+  const [connectingProvider, setConnectingProvider] = useState<'printify' | 'shopify'>('printify');
+  const [isEditShopModalOpen, setIsEditShopModalOpen] = useState(false);
+  const [editingShop, setEditingShop] = useState<Store | null>(null);
 
   useEffect(() => {
     async function loadTokens() {
@@ -110,6 +116,14 @@ export default function SettingsPage() {
   };
 
   const handleDeleteToken = async (tokenId: string) => {
+    // Check if any shops are using this token
+    const shopsUsingToken = stores.filter(s => s.api_token_id === tokenId);
+    
+    if (shopsUsingToken.length > 0) {
+      alert(`Cannot delete this token: ${shopsUsingToken.length} shop(s) are using it. Please delete or reassign the shops first.`);
+      return;
+    }
+
     if (!confirm('Are you sure you want to delete this API token?')) {
       return;
     }
@@ -118,55 +132,12 @@ export default function SettingsPage() {
     try {
       const { getUserId } = await import('@/lib/user');
       const userId = getUserId();
-      
-      // Find the token being deleted
-      const tokenToDelete = tokens.find(t => t.id === tokenId);
-      if (!tokenToDelete) {
-        throw new Error('Token not found');
-      }
 
-      // Check if this was the default token
-      const wasDefault = tokenToDelete.is_default;
-      const provider = tokenToDelete.provider;
-
-      // Delete the token
       const response = await fetch(`/api/user/tokens?userId=${userId}&tokenId=${tokenId}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        // If we deleted the default token, promote another token of the same provider
-        if (wasDefault) {
-          // Find remaining tokens of the same provider
-          const remainingTokensOfSameProvider = tokens.filter(
-            t => t.id !== tokenId && t.provider === provider
-          );
-
-          // If there are other tokens of the same provider, promote the first one
-          if (remainingTokensOfSameProvider.length > 0) {
-            const newDefaultToken = remainingTokensOfSameProvider[0];
-            console.log(`🔄 Promoting token ${newDefaultToken.id} as new default for ${provider}`);
-            
-            // Update the new default token
-            const updateResponse = await fetch('/api/user/tokens', {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                tokenId: newDefaultToken.id,
-                userId,
-                is_default: true,
-              }),
-            });
-
-            if (!updateResponse.ok) {
-              console.error('❌ Failed to promote new default token');
-            } else {
-              console.log('✅ New default token promoted successfully');
-            }
-          }
-        }
-
-        // Reload tokens to get updated list
         await loadTokens();
       } else {
         alert('Failed to delete token');
@@ -195,6 +166,23 @@ export default function SettingsPage() {
     setEditingToken(null);
   };
 
+  const loadStores = async () => {
+    setIsLoadingStores(true);
+    try {
+      const { getUserId } = await import('@/lib/user');
+      const userId = getUserId();
+      const response = await fetch(`/api/user/stores?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setStores(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading stores:', error);
+    } finally {
+      setIsLoadingStores(false);
+    }
+  };
+
   const handleDeleteStore = async (storeId: string) => {
     if (!confirm('Are you sure you want to delete this shop?')) {
       return;
@@ -209,7 +197,8 @@ export default function SettingsPage() {
       });
 
       if (response.ok) {
-        setStores(stores.filter(s => s.id !== storeId));
+        // Reload stores to get updated list (with auto-promoted default if needed)
+        await loadStores();
       } else {
         alert('Failed to delete shop');
       }
@@ -219,6 +208,22 @@ export default function SettingsPage() {
     } finally {
       setDeletingStoreId(null);
     }
+  };
+
+  const handleShopConnected = async () => {
+    // Reload stores after connecting a new one
+    await loadStores();
+  };
+
+  const handleEditShop = (shop: Store) => {
+    setEditingShop(shop);
+    setIsEditShopModalOpen(true);
+  };
+
+  const handleShopUpdated = async () => {
+    // Reload stores after updating
+    await loadStores();
+    setEditingShop(null);
   };
 
   const handleDeletePreset = async (presetId: string) => {
@@ -436,14 +441,13 @@ export default function SettingsPage() {
                       <span className="font-medium text-gray-900">
                         {token.name || 'Unnamed Token'}
                       </span>
-                      {token.is_default && (
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" title="Default token" />
-                      )}
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
                     <p className="text-xs text-gray-500 capitalize mb-1">Provider: {token.provider}</p>
                     <p className="text-sm text-gray-600 font-mono">{maskToken(token.token_ref)}</p>
                     <p className="text-xs text-gray-500 mt-1">
+                      Used by: {stores.filter(s => s.api_token_id === token.id).length} shops
+                      {' • '}
                       Created: {formatDate(token.created_at)}
                       {token.last_used_at && ` • Last used: ${formatDate(token.last_used_at)}`}
                     </p>
@@ -484,26 +488,36 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      {/* Shops Section */}
+      {/* Printify Shops Section */}
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                 <StoreIcon className="w-5 h-5" />
-                Shops
+                Printify Shops
               </h2>
-              <p className="text-sm text-gray-600 mt-1">Manage your connected shops</p>
+              <p className="text-sm text-gray-600 mt-1">Manage your Printify stores</p>
             </div>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setConnectingProvider('printify');
+                setIsConnectShopModalOpen(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Connect Shop
+            </Button>
           </div>
 
           {isLoadingStores ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             </div>
-          ) : stores.length > 0 ? (
+          ) : stores.filter(s => s.provider === 'printify').length > 0 ? (
             <div className="space-y-3">
-              {stores.map((store) => (
+              {stores.filter(s => s.provider === 'printify').map((store) => (
                 <div
                   key={store.id}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -513,15 +527,25 @@ export default function SettingsPage() {
                       <span className="font-medium text-gray-900">
                         {store.name}
                       </span>
+                      {store.is_default && (
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" title="Default shop" />
+                      )}
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
-                    <p className="text-xs text-gray-500 capitalize mb-1">Provider: {store.provider}</p>
                     <p className="text-sm text-gray-600">Store ID: {store.store_id}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       Created: {formatDate(store.created_at)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleEditShop(store)}
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="secondary"
                       size="sm"
@@ -542,8 +566,93 @@ export default function SettingsPage() {
           ) : (
             <div className="text-center py-8 text-gray-500">
               <StoreIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-              <p>No shops connected</p>
-              <p className="text-sm text-gray-400 mt-1">Connect a shop to get started</p>
+              <p>No Printify shops connected</p>
+              <p className="text-sm text-gray-400 mt-1">Click "Connect Shop" to get started</p>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Shopify Shops Section */}
+      <Card>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <StoreIcon className="w-5 h-5" />
+                Shopify Shops
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">Manage your Shopify stores</p>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setConnectingProvider('shopify');
+                setIsConnectShopModalOpen(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Connect Shop
+            </Button>
+          </div>
+
+          {isLoadingStores ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          ) : stores.filter(s => s.provider === 'shopify').length > 0 ? (
+            <div className="space-y-3">
+              {stores.filter(s => s.provider === 'shopify').map((store) => (
+                <div
+                  key={store.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-900">
+                        {store.name}
+                      </span>
+                      {store.is_default && (
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" title="Default shop" />
+                      )}
+                      <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
+                    </div>
+                    <p className="text-sm text-gray-600">Store ID: {store.store_id}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Created: {formatDate(store.created_at)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleEditShop(store)}
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDeleteStore(store.id)}
+                      disabled={deletingStoreId === store.id}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      {deletingStoreId === store.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <StoreIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+              <p>No Shopify shops connected</p>
+              <p className="text-sm text-gray-400 mt-1">Click "Connect Shop" to get started</p>
             </div>
           )}
         </div>
@@ -562,7 +671,6 @@ export default function SettingsPage() {
         isOpen={isTokenModalOpen}
         onClose={() => setIsTokenModalOpen(false)}
         onTokenAdded={handleTokenAdded}
-        existingTokensCount={tokens.filter(t => t.provider === 'printify').length}
       />
 
       {/* Edit Token Modal */}
@@ -575,7 +683,29 @@ export default function SettingsPage() {
           }}
           token={editingToken}
           onTokenUpdated={handleTokenUpdated}
-          isOnlyTokenOfType={tokens.filter(t => t.provider === editingToken.provider).length === 1}
+        />
+      )}
+
+      {/* Connect Shop Modal */}
+      <ConnectShopModal
+        isOpen={isConnectShopModalOpen}
+        onClose={() => setIsConnectShopModalOpen(false)}
+        provider={connectingProvider}
+        onShopConnected={handleShopConnected}
+        existingShopsCount={stores.filter(s => s.provider === connectingProvider).length}
+      />
+
+      {/* Edit Shop Modal */}
+      {editingShop && (
+        <EditShopModal
+          isOpen={isEditShopModalOpen}
+          onClose={() => {
+            setIsEditShopModalOpen(false);
+            setEditingShop(null);
+          }}
+          shop={editingShop}
+          onShopUpdated={handleShopUpdated}
+          isOnlyShopOfType={stores.filter(s => s.provider === editingShop.provider).length === 1}
         />
       )}
     </div>

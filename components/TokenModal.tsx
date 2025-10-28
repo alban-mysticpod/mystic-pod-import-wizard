@@ -11,16 +11,12 @@ interface TokenModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTokenAdded: () => void;
-  existingTokensCount?: number; // Number of existing tokens for the selected provider
 }
 
-export function TokenModal({ isOpen, onClose, onTokenAdded, existingTokensCount = 0 }: TokenModalProps) {
+export function TokenModal({ isOpen, onClose, onTokenAdded }: TokenModalProps) {
   const [provider, setProvider] = useState<'printify' | 'shopify'>('printify');
   const [token, setToken] = useState('');
   const [name, setName] = useState('');
-  // If this will be the first token of this provider, force it to be default
-  const isFirstToken = existingTokensCount === 0;
-  const [isDefault, setIsDefault] = useState(isFirstToken);
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,11 +25,10 @@ export function TokenModal({ isOpen, onClose, onTokenAdded, existingTokensCount 
       // Reset form when modal opens
       setToken('');
       setName('');
-      setIsDefault(isFirstToken); // Set to true if first token
       setError('');
       setProvider('printify');
     }
-  }, [isOpen, isFirstToken]);
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +58,6 @@ export function TokenModal({ isOpen, onClose, onTokenAdded, existingTokensCount 
             userId, 
             importId: userId, // Use userId as importId in settings context
             name: name.trim(), // Send the name to be saved
-            is_default: isDefault // Send the default flag
           }),
         });
 
@@ -173,39 +167,6 @@ export function TokenModal({ isOpen, onClose, onTokenAdded, existingTokensCount 
               placeholder="Enter your API token"
               required
             />
-
-            {/* Set as Default Checkbox */}
-            <div className="border-t border-gray-200 pt-4">
-              <div className="flex items-start">
-                <input
-                  type="checkbox"
-                  id="isDefault"
-                  checked={isDefault}
-                  onChange={(e) => setIsDefault(e.target.checked)}
-                  disabled={isFirstToken}
-                  className={`w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mt-0.5 ${
-                    isFirstToken ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                />
-                <div className="ml-2">
-                  <label 
-                    htmlFor="isDefault" 
-                    className={`text-sm font-medium text-gray-900 ${
-                      isFirstToken ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
-                    }`}
-                  >
-                    Set as default token
-                  </label>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {isFirstToken ? (
-                      <>This will be your first {provider} token and will be set as default automatically.</>
-                    ) : (
-                      <>This token will be used by default for {provider} operations.</>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
 
             {/* Helper Text */}
             <div className="text-sm text-gray-500">

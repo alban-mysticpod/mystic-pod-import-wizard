@@ -98,7 +98,6 @@ export interface ApiToken {
   provider: 'printify' | 'shopify';
   token_ref: string;
   name?: string | null;
-  is_default?: boolean;
   created_at: string;
   last_used_at: string | null;
 }
@@ -110,6 +109,8 @@ export interface Store {
   name: string;
   provider: 'printify' | 'shopify';
   store_id: string; // External store ID (Printify shop_id, etc.)
+  api_token_id: string; // Foreign key to api_tokens table
+  is_default: boolean; // Only one default shop per provider
   created_at: string;
 }
 
