@@ -12,10 +12,30 @@ interface Step1Props {
   folderUrl: string;
   fileCount: number;
   sampleFiles: Array<{ id: string; name: string }>;
-  onNext: (data: { folderUrl: string; folderId: string; fileCount: number; sampleFiles: Array<{ id: string; name: string }>; importId: string }) => void;
+  selectedPrintifyShopId: string | null;
+  selectedShopifyShopId: string | null;
+  onNext: (data: { 
+    folderUrl: string; 
+    folderId: string; 
+    fileCount: number; 
+    sampleFiles: Array<{ id: string; name: string }>; 
+    importId: string;
+    // New data (from old Step 2)
+    apiToken: string;
+    tokenRef: string;
+    shops: any[];
+    shopId: number;
+  }) => void;
 }
 
-export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: Step1Props) {
+export function Step1DriveFolder({ 
+  folderUrl, 
+  fileCount, 
+  sampleFiles, 
+  selectedPrintifyShopId,
+  selectedShopifyShopId,
+  onNext 
+}: Step1Props) {
   const [url, setUrl] = useState(folderUrl);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -89,15 +109,101 @@ export function Step1DriveFolder({ folderUrl, fileCount, sampleFiles, onNext }: 
     }
   };
 
-  const handleNext = () => {
-    if (validationResult) {
+  const handleNext = async () => {
+    if (!validationResult) {
+      setError('Please validate your folder first');
+      return;
+    }
+
+    if (!selectedPrintifyShopId) {
+      setError('Please select a Printify shop');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      console.log('🚀 Step1: Preparing to continue with shop:', selectedPrintifyShopId);
+      
+      // 1. Get the selected Printify shop details from DB
+      const { getUserId } = await import('@/lib/user');
+      const userId = getUserId();
+      
+      console.log('📡 Step1: Fetching shop details from DB...');
+      const storesResponse = await fetch(`/api/user/stores?userId=${userId}`);
+      if (!storesResponse.ok) {
+        throw new Error('Failed to fetch stores');
+      }
+      
+      const allStores = await storesResponse.json();
+      const selectedStore = allStores.find((s: any) => s.id === selectedPrintifyShopId);
+      
+      if (!selectedStore) {
+        throw new Error('Selected shop not found');
+      }
+      
+      console.log('✅ Step1: Shop found:', selectedStore.name);
+      
+      // 2. Get the token associated with this shop
+      console.log('📡 Step1: Fetching token details...');
+      const tokensResponse = await fetch(`/api/user/tokens?userId=${userId}`);
+      if (!tokensResponse.ok) {
+        throw new Error('Failed to fetch tokens');
+      }
+      
+      const allTokens = await tokensResponse.json();
+      const tokenRecord = allTokens.find((t: any) => t.id === selectedStore.api_token);
+      
+      if (!tokenRecord) {
+        throw new Error('Token not found for this shop');
+      }
+      
+      console.log('✅ Step1: Token found');
+      
+      // 3. Validate the token (even if already in DB)
+      console.log('📡 Step1: Validating token with Printify...');
+      const { verifyPrintifyToken } = await import('@/lib/api');
+      const validatedToken = await verifyPrintifyToken(
+        tokenRecord.token_ref, 
+        userId, 
+        validationResult.importId,
+        tokenRecord.name
+      );
+      console.log('✅ Step1: Token validated');
+      
+      // 4. Log the shop selection (link shop ↔ import)
+      console.log('📡 Step1: Logging shop selection...');
+      const { chooseShop } = await import('@/lib/api');
+      await chooseShop(
+        validatedToken.id,  // apiTokenId (UUID, not the token string)
+        selectedStore.shop_id,  // shopId (Printify shop ID)
+        userId,
+        validationResult.importId,
+        selectedStore.is_default  // isDefault
+      );
+      console.log('✅ Step1: Shop selection logged');
+      
+      // 5. Pass to next step (skip Step 2, go directly to Step 3)
+      console.log('✅ Step1: All setup complete, moving to blueprint selection');
       onNext({
         folderUrl: url,
         folderId: validationResult.folderId,
         fileCount: validationResult.fileCount,
         sampleFiles: validationResult.sampleFiles,
         importId: validationResult.importId,
+        // Data that was previously from Step 2
+        apiToken: validatedToken.id,
+        tokenRef: tokenRecord.token_ref,
+        shops: [],  // Not used anymore
+        shopId: parseInt(selectedStore.shop_id),
       });
+    } catch (err) {
+      console.error('❌ Step1: Error during shop setup:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to setup shop';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
