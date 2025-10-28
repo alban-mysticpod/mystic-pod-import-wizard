@@ -8,7 +8,6 @@ import { CheckCircle, XCircle, ExternalLink, RotateCcw, Package, ArrowLeft } fro
 
 interface Step7Props {
   folderId: string;
-  tokenRef: string;
   shopId: number;
   importId: string;
   fileCount: number;
@@ -21,7 +20,7 @@ type ImportState = 'importing' | 'success' | 'error';
 // Global map to track import state across component re-renders
 const importState = new Map<string, boolean>();
 
-export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, onRestart, onBack }: Step7Props) {
+export function Step7Process({ folderId, shopId, importId, fileCount, onRestart, onBack }: Step7Props) {
   const [currentState, setCurrentState] = useState<ImportState>('importing');
   const [error, setError] = useState('');
   const [importResult, setImportResult] = useState<any>(null);
@@ -29,7 +28,7 @@ export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, 
 
   const startImport = useCallback(async () => {
     // Create a unique key for this import session
-    const importKey = `${folderId}-${tokenRef}-${shopId}`;
+    const importKey = `${folderId}-${shopId}-${importId}`;
     
     // Check global import state to prevent double calls
     if (importState.get(importKey)) {
@@ -46,7 +45,7 @@ export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, 
       console.log('🚀 Starting import to Printify... importId:', importId);
       
       // Étape 1: Déclencher l'import (retourne juste un record import avec ID)
-      const importRecord = await importToPrintify(folderId, tokenRef, shopId, importId);
+      const importRecord = await importToPrintify(folderId, shopId, importId);
       console.log('✅ Import job started:', importRecord);
       
       // Étape 2: Polling du statut avec progress updates
@@ -66,15 +65,15 @@ export function Step7Process({ folderId, tokenRef, shopId, importId, fileCount, 
       // Reset import state on error to allow retry
       importState.set(importKey, false);
     }
-  }, [folderId, tokenRef, shopId, importId]);
+  }, [folderId, shopId, importId]);
 
   useEffect(() => {
     // Start import immediately when component mounts
-    const importKey = `${folderId}-${tokenRef}-${shopId}`;
+    const importKey = `${folderId}-${shopId}-${importId}`;
     if (!importState.get(importKey)) {
       startImport();
     }
-  }, [folderId, tokenRef, shopId, importId, startImport]);
+  }, [folderId, shopId, importId, startImport]);
 
   if (currentState === 'importing') {
     return (

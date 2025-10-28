@@ -250,7 +250,6 @@ export function Wizard() {
           {state.currentStep === 5 && state.selectedShopId && (
             <Step6Process
               folderId={state.folderId}
-              tokenRef={state.tokenRef}
               shopId={state.selectedShopId}
               importId={state.importId}
               fileCount={state.files.length}

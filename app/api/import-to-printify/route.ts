@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { folderId, tokenRef, shopId, userId, importId } = body;
+    const { folderId, shopId, userId, importId } = body;
 
-    if (!folderId || !tokenRef || !shopId || !userId) {
+    if (!folderId || !shopId || !userId) {
       return NextResponse.json(
-        { error: 'folderId, tokenRef, shopId, and userId are required' },
+        { error: 'folderId, shopId, and userId are required' },
         { status: 400 }
       );
     }
@@ -20,11 +20,11 @@ export async function POST(request: NextRequest) {
     }
 
     const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/import-to-printify';
-    const payload = { folderId, tokenRef, shopId, userId, importId };
+    const payload = { folderId, shopId, userId, importId };
     
-    console.log('🚀 Starting import to Printify via n8n webhook:');
+    console.log('🚀 Starting import to Printify via n8n webhook');
     console.log('- URL:', webhookUrl);
-    console.log('- Payload:', { folderId, tokenRef, shopId: shopId, userId, importId });
+    console.log('- folderId:', folderId, '- shopId:', shopId, '- userId:', userId, '- importId:', importId);
 
     const n8nResponse = await fetch(webhookUrl, {
       method: 'POST',

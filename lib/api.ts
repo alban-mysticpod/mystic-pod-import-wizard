@@ -157,7 +157,6 @@ export async function listDriveFiles(folderId: string): Promise<DriveListRespons
 // Déclencher l'import vers Printify - retourne maintenant un record import
 export async function importToPrintify(
   folderId: string,
-  tokenRef: string,
   shopId: number,
   importId: string
 ): Promise<{ id: string; status: string }> {
@@ -166,7 +165,7 @@ export async function importToPrintify(
   const response = await fetch(API_BASE.importToPrintify, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ folderId, tokenRef, shopId, userId, importId }),
+    body: JSON.stringify({ folderId, shopId, userId, importId }),
   });
 
   if (!response.ok) {
