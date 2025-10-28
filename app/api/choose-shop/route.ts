@@ -8,12 +8,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('✅ [STEP 2] Body parsed successfully');
     
-    const { apiTokenId, shopId, userId, isDefault } = body;
+    const { apiTokenId, shopId, userId, importId, isDefault } = body;
 
     console.log('🔵 [STEP 3] Validating request parameters:');
     console.log('  - apiTokenId:', apiTokenId, '(type:', typeof apiTokenId, ')');
     console.log('  - shopId:', shopId, '(type:', typeof shopId, ')');
     console.log('  - userId:', userId, '(type:', typeof userId, ')');
+    console.log('  - importId:', importId, '(type:', typeof importId, ')');
     console.log('  - isDefault:', isDefault, '(type:', typeof isDefault, ')');
 
     if (!apiTokenId || !shopId) {
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
       apiTokenId,
       shopId, 
       userId,
+      importId: importId || null, // Optional, for linking shop to import
       isDefault: isDefault || false // Default to false if not provided
     };
     

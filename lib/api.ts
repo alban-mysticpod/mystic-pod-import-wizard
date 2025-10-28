@@ -115,7 +115,7 @@ export async function chooseShop(
   const response = await fetch(API_BASE.sessionChooseShop, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ apiTokenId, shopId, userId, isDefault }),
+    body: JSON.stringify({ apiTokenId, shopId, userId, importId, isDefault }),
   });
 
   if (!response.ok) {
