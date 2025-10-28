@@ -33,12 +33,18 @@ export function ShopSelector({ provider, disabled = false, onShopChange }: ShopS
         const providerStores = data.filter((s: Store) => s.provider === provider);
         setStores(providerStores);
         
+        console.log(`🔍 ShopSelector [${provider}]: Found ${providerStores.length} shops`);
+        
         // Set the default store as selected
         const defaultStore = providerStores.find((s: Store) => s.is_default);
         if (defaultStore) {
+          console.log(`✅ ShopSelector [${provider}]: Auto-selecting default shop:`, defaultStore.name);
           setSelectedStore(defaultStore);
         } else if (providerStores.length > 0) {
+          console.log(`⚠️ ShopSelector [${provider}]: No default found, selecting first shop:`, providerStores[0].name);
           setSelectedStore(providerStores[0]);
+        } else {
+          console.log(`❌ ShopSelector [${provider}]: No shops available`);
         }
       }
     } catch (error) {
