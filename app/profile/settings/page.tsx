@@ -117,7 +117,7 @@ export default function SettingsPage() {
 
   const handleDeleteToken = async (tokenId: string) => {
     // Check if any shops are using this token
-    const shopsUsingToken = stores.filter(s => s.api_token_id === tokenId);
+    const shopsUsingToken = stores.filter(s => s.api_token === tokenId);
     
     if (shopsUsingToken.length > 0) {
       alert(`Cannot delete this token: ${shopsUsingToken.length} shop(s) are using it. Please delete or reassign the shops first.`);
@@ -446,7 +446,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-gray-500 capitalize mb-1">Provider: {token.provider}</p>
                     <p className="text-sm text-gray-600 font-mono">{maskToken(token.token_ref)}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Used by: {stores.filter(s => s.api_token_id === token.id).length} shops
+                      Used by: {stores.filter(s => s.api_token === token.id).length} shops
                       {' • '}
                       Created: {formatDate(token.created_at)}
                       {token.last_used_at && ` • Last used: ${formatDate(token.last_used_at)}`}

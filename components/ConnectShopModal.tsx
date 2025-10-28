@@ -134,7 +134,7 @@ export function ConnectShopModal({
           provider,
           name: selectedShop.title,
           store_id: String(selectedShop.id),
-          api_token_id: apiTokenId,
+          api_token: apiTokenId,
           is_default: isDefault || isFirstShop,
         }),
       });

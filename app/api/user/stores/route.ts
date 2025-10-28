@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from('stores')
-      .select('id, name, provider, store_id, api_token_id, is_default, created_at')
+      .select('id, name, provider, store_id, api_token, is_default, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 

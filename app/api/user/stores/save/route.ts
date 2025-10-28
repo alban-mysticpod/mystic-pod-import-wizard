@@ -4,16 +4,16 @@ import { supabaseAdmin } from '@/lib/supabase';
 /**
  * POST /api/user/stores/save
  * Saves a selected shop to the stores table
- * Body: { userId, provider, name, store_id, api_token_id, is_default }
+ * Body: { userId, provider, name, store_id, api_token, is_default }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, provider, name, store_id, api_token_id, is_default } = body;
+    const { userId, provider, name, store_id, api_token, is_default } = body;
 
-    if (!userId || !provider || !name || !store_id || !api_token_id) {
+    if (!userId || !provider || !name || !store_id || !api_token) {
       return NextResponse.json(
-        { error: 'userId, provider, name, store_id, and api_token_id are required' },
+        { error: 'userId, provider, name, store_id, and api_token are required' },
         { status: 400 }
       );
     }
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         provider,
         name,
         store_id,
-        api_token_id,
+        api_token,
         is_default: shouldBeDefault,
       })
       .select()
