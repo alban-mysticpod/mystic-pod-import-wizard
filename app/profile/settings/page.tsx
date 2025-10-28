@@ -98,6 +98,18 @@ export default function SettingsPage() {
     loadStores();
   }, []);
 
+  // Check if we should auto-open the connect shop modal (from wizard redirect)
+  useEffect(() => {
+    const provider = sessionStorage.getItem('openConnectShopModal');
+    if (provider && (provider === 'printify' || provider === 'shopify')) {
+      console.log('🔗 Auto-opening connect shop modal for:', provider);
+      setConnectingProvider(provider);
+      setIsConnectShopModalOpen(true);
+      // Clear the flag
+      sessionStorage.removeItem('openConnectShopModal');
+    }
+  }, []);
+
   const loadTokens = async () => {
     setIsLoadingTokens(true);
     try {

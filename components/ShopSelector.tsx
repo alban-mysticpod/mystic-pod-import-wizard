@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Store as StoreIcon, ChevronDown, Check } from 'lucide-react';
+import { Store as StoreIcon, ChevronDown, Check, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Store } from '@/types';
 
 interface ShopSelectorProps {
@@ -11,6 +12,7 @@ interface ShopSelectorProps {
 }
 
 export function ShopSelector({ provider, disabled = false, onShopChange }: ShopSelectorProps) {
+  const router = useRouter();
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -54,6 +56,12 @@ export function ShopSelector({ provider, disabled = false, onShopChange }: ShopS
     }
   };
 
+  const handleConnectNewShop = () => {
+    // Store the provider in sessionStorage so Settings page can auto-open the modal
+    sessionStorage.setItem('openConnectShopModal', provider);
+    router.push('/profile/settings');
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
@@ -65,10 +73,21 @@ export function ShopSelector({ provider, disabled = false, onShopChange }: ShopS
 
   if (stores.length === 0) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <StoreIcon className="w-4 h-4 text-yellow-600" />
-        <span className="text-sm text-yellow-700">No {provider} shop connected</span>
-      </div>
+      <button
+        onClick={handleConnectNewShop}
+        disabled={disabled}
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
+          disabled
+            ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60'
+            : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100 hover:border-yellow-300 cursor-pointer'
+        }`}
+      >
+        <StoreIcon className={`w-4 h-4 ${disabled ? 'text-gray-400' : 'text-yellow-600'}`} />
+        <span className={`text-sm ${disabled ? 'text-gray-500' : 'text-yellow-700'}`}>
+          No {provider} shop connected
+        </span>
+        {!disabled && <Plus className="w-4 h-4 text-yellow-600" />}
+      </button>
     );
   }
 
@@ -123,6 +142,20 @@ export function ShopSelector({ provider, disabled = false, onShopChange }: ShopS
                 )}
               </button>
             ))}
+            
+            {/* Divider */}
+            {stores.length > 0 && (
+              <div className="border-t border-gray-200 my-1"></div>
+            )}
+            
+            {/* Connect New Shop Button */}
+            <button
+              onClick={handleConnectNewShop}
+              className="w-full flex items-center gap-2 px-4 py-3 hover:bg-green-50 transition-colors text-left"
+            >
+              <Plus className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-700">Connect new shop</span>
+            </button>
           </div>
         </>
       )}
