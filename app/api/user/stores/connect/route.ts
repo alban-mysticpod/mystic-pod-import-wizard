@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       const shopsWebhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/list-shops';
       const shopsPayload = {
         userId,
-        importId: userId,
+        apiTokenId: data.id, // Send the apiToken ID that was just created
       };
 
       console.log('🏪 Calling list-shops webhook with payload:', shopsPayload);
