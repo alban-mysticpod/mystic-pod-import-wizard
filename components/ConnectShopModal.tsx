@@ -94,13 +94,14 @@ export function ConnectShopModal({
 
         const data = await response.json();
         
-        // n8n returns the store object directly:
+        // n8n returns the store object directly and creates everything in DB
         // { id, user_id, provider, external_id, name, api_token, is_default, created_at, shop_id }
+        // For Shopify: 1 token = 1 shop, so we're done immediately
         if (data.id && data.shop_id) {
-          setApiTokenId(data.api_token); // UUID of the API token
-          setAvailableShops([{ id: data.shop_id, title: data.name || shopUrl }]);
-          setSelectedShopId(data.shop_id);
-          setStep(ModalStep.SELECT_SHOP);
+          console.log('✅ Shopify shop connected:', data);
+          // Close modal and refresh stores list
+          handleClose();
+          onShopConnected();
         } else {
           setError('Failed to connect Shopify shop');
         }
