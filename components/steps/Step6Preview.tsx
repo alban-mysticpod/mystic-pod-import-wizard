@@ -6,13 +6,14 @@ import { Card } from '@/components/Card';
 import { fetchImages } from '@/lib/api';
 import { SupabaseFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
-import { Upload, RefreshCw, ArrowLeft, Check, Image as ImageIcon, Settings } from 'lucide-react';
+import { Upload, RefreshCw, ArrowLeft, Check, Image as ImageIcon, Settings, Info } from 'lucide-react';
 
 interface Step6Props {
   folderId: string;
   importId: string;
   files: SupabaseFile[];
-  onNext: (files: SupabaseFile[]) => void;
+  selectedShopifyShopId: string | null; // Shopify shop ID (if connected)
+  onNext: (files: SupabaseFile[], pushToShopify: boolean) => void;
   onBack?: () => void;
 }
 
@@ -22,13 +23,15 @@ const loadingState = new Map<string, boolean>();
 // MVP Feature Flag: Disable file selection for MVP
 const ENABLE_FILE_SELECTION = false;
 
-export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step6Props) {
+export function Step6Preview({ folderId, importId, files, selectedShopifyShopId, onNext, onBack }: Step6Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   // Auto-select all files by default if files are provided
   const initialSelection = new Set(files.length > 0 ? files.map(file => file.id) : []);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(initialSelection);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
+  const [pushToShopify, setPushToShopify] = useState(false); // Shopify push checkbox state
+  const [showShopifyTooltip, setShowShopifyTooltip] = useState(false); // Tooltip for disabled checkbox
 
   // Log initial selection
   useEffect(() => {
@@ -92,10 +95,10 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
       const filesToProcess = selectedFiles.size > 0 
         ? currentFiles.filter(file => selectedFiles.has(file.id))
         : currentFiles;
-      onNext(filesToProcess);
+      onNext(filesToProcess, pushToShopify);
     } else {
       // MVP: Import all files
-      onNext(currentFiles);
+      onNext(currentFiles, pushToShopify);
     }
   };
 
@@ -323,6 +326,53 @@ export function Step6Preview({ folderId, importId, files, onNext, onBack }: Step
             </Button>
           </div>
         )}
+
+        {/* Shopify Push Checkbox */}
+        <div className="relative">
+          <div 
+            className={`flex items-start gap-3 p-4 bg-gray-50 rounded-lg border ${
+              selectedShopifyShopId ? 'border-gray-200' : 'border-gray-300 bg-gray-100'
+            }`}
+            onMouseEnter={() => !selectedShopifyShopId && setShowShopifyTooltip(true)}
+            onMouseLeave={() => setShowShopifyTooltip(false)}
+          >
+            <input
+              type="checkbox"
+              id="pushToShopify"
+              checked={pushToShopify}
+              onChange={(e) => setPushToShopify(e.target.checked)}
+              disabled={!selectedShopifyShopId}
+              className={`mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 ${
+                !selectedShopifyShopId ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              }`}
+            />
+            <label
+              htmlFor="pushToShopify"
+              className={`text-sm ${
+                selectedShopifyShopId ? 'text-gray-700 cursor-pointer' : 'text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <span className="font-medium">Push to Shopify</span>
+              <p className="text-xs text-gray-500 mt-1">
+                {selectedShopifyShopId 
+                  ? 'Products will also be created in your Shopify store'
+                  : 'Connect a Shopify shop to enable this option'
+                }
+              </p>
+            </label>
+            {!selectedShopifyShopId && (
+              <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+            )}
+          </div>
+
+          {/* Tooltip for disabled state */}
+          {!selectedShopifyShopId && showShopifyTooltip && (
+            <div className="absolute left-0 -top-16 z-10 w-full max-w-xs bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg">
+              <p>You cannot push to Shopify because no Shopify shop is connected to this import.</p>
+              <div className="absolute left-6 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-between gap-4">
           <div className="flex gap-3">

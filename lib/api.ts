@@ -158,14 +158,15 @@ export async function listDriveFiles(folderId: string): Promise<DriveListRespons
 export async function importToPrintify(
   folderId: string,
   shopId: number,
-  importId: string
+  importId: string,
+  pushToShopify: boolean = false
 ): Promise<{ id: string; status: string }> {
   const userId = getUserId();
   
   const response = await fetch(API_BASE.importToPrintify, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ folderId, shopId, userId, importId }),
+    body: JSON.stringify({ folderId, shopId, userId, importId, pushToShopify }),
   });
 
   if (!response.ok) {

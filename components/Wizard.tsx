@@ -34,6 +34,7 @@ const initialState: WizardState = {
   isComplete: false,
   error: null,
   shouldGenerateMockups: false, // Nouveau flag pour savoir si on doit générer les mockups
+  pushToShopify: false, // Flag to push products to Shopify
 };
 
 export function Wizard() {
@@ -149,9 +150,11 @@ export function Wizard() {
   }, [updateState]);
 
   // Step4 = Preview (was Step5, was Step6)
-  const handleStep4Next = useCallback((files: SupabaseFile[]) => {
+  const handleStep4Next = useCallback((files: SupabaseFile[], pushToShopify: boolean) => {
+    console.log('🎯 Step4 → Step5: Files selected, pushToShopify:', pushToShopify);
     updateState({
       files,
+      pushToShopify, // Store the Shopify push flag
       currentStep: 5, // Renumbered: was 6, now 5 (Process/Final)
     });
   }, [updateState]);
@@ -238,6 +241,7 @@ export function Wizard() {
               folderId={state.folderId}
               importId={state.importId}
               files={state.files}
+              selectedShopifyShopId={selectedShopifyShopId}
               onNext={handleStep4Next}
               onBack={handleBack}
             />
@@ -249,6 +253,7 @@ export function Wizard() {
               shopId={state.selectedShopId}
               importId={state.importId}
               fileCount={state.files.length}
+              pushToShopify={state.pushToShopify}
               onRestart={handleRestart}
               onBack={handleBack}
             />

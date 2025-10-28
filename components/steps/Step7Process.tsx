@@ -11,6 +11,7 @@ interface Step7Props {
   shopId: number;
   importId: string;
   fileCount: number;
+  pushToShopify: boolean; // Flag to push to Shopify after Printify import
   onRestart: () => void;
   onBack?: () => void;
 }
@@ -20,7 +21,7 @@ type ImportState = 'importing' | 'success' | 'error';
 // Global map to track import state across component re-renders
 const importState = new Map<string, boolean>();
 
-export function Step7Process({ folderId, shopId, importId, fileCount, onRestart, onBack }: Step7Props) {
+export function Step7Process({ folderId, shopId, importId, fileCount, pushToShopify, onRestart, onBack }: Step7Props) {
   const [currentState, setCurrentState] = useState<ImportState>('importing');
   const [error, setError] = useState('');
   const [importResult, setImportResult] = useState<any>(null);
@@ -42,10 +43,10 @@ export function Step7Process({ folderId, shopId, importId, fileCount, onRestart,
     setImportProgress({ processed: 0, total: 0, successful: 0, failed: 0 });
 
     try {
-      console.log('🚀 Starting import to Printify... importId:', importId);
+      console.log('🚀 Starting import to Printify... importId:', importId, 'pushToShopify:', pushToShopify);
       
       // Étape 1: Déclencher l'import (retourne juste un record import avec ID)
-      const importRecord = await importToPrintify(folderId, shopId, importId);
+      const importRecord = await importToPrintify(folderId, shopId, importId, pushToShopify);
       console.log('✅ Import job started:', importRecord);
       
       // Étape 2: Polling du statut avec progress updates
@@ -65,7 +66,7 @@ export function Step7Process({ folderId, shopId, importId, fileCount, onRestart,
       // Reset import state on error to allow retry
       importState.set(importKey, false);
     }
-  }, [folderId, shopId, importId]);
+  }, [folderId, shopId, importId, pushToShopify]);
 
   useEffect(() => {
     // Start import immediately when component mounts
@@ -73,7 +74,7 @@ export function Step7Process({ folderId, shopId, importId, fileCount, onRestart,
     if (!importState.get(importKey)) {
       startImport();
     }
-  }, [folderId, shopId, importId, startImport]);
+  }, [folderId, shopId, importId, pushToShopify, startImport]);
 
   if (currentState === 'importing') {
     return (

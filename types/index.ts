@@ -232,6 +232,7 @@ export interface WizardState {
   isComplete: boolean;
   error: string | null;
   shouldGenerateMockups: boolean; // Flag pour savoir si on doit générer les mockups
+  pushToShopify: boolean; // Flag to push products to Shopify after Printify import
 }
 
 export const STEPS = [
