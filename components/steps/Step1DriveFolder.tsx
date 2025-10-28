@@ -187,7 +187,29 @@ export function Step1DriveFolder({
       );
       console.log('✅ Step1: Shop selection logged');
       
-      // 6. Pass to next step (skip Step 2, go directly to Step 3)
+      // 6. Trigger asset creation (download files from Google Drive to our server)
+      console.log('📡 Step1: Triggering asset creation...');
+      try {
+        const assetResponse = await fetch('https://n8n.srv874829.hstgr.cloud/webhook/trigger-asset-creation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            importId: validationResult.importId,
+            userId: userId,
+          }),
+        });
+        
+        if (assetResponse.ok) {
+          console.log('✅ Step1: Asset creation triggered successfully');
+        } else {
+          console.warn('⚠️ Step1: Asset creation trigger failed, but continuing anyway');
+        }
+      } catch (assetErr) {
+        // Non-blocking: log error but continue to next step
+        console.warn('⚠️ Step1: Asset creation trigger error:', assetErr);
+      }
+      
+      // 7. Pass to next step (skip Step 2, go directly to Step 3)
       console.log('✅ Step1: All setup complete, moving to blueprint selection');
       onNext({
         folderUrl: url,
