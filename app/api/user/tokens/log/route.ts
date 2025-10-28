@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/log-printify-token';
+    const webhookUrl = 'https://n8n.srv874829.hstgr.cloud/webhook/log-printify-api-token';
     const payload = { apiTokenId, userId, importId };
     
     console.log('🚀 [TOKEN LOG] Calling n8n webhook:', webhookUrl);
