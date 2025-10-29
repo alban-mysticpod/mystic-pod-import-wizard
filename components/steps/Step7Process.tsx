@@ -228,7 +228,7 @@ export function Step7Process({ folderId, shopId, importId, fileCount, pushToShop
               <Button
                 onClick={() => {
                   // Réinitialiser le state global pour permettre un nouveau retry
-                  const importKey = `${folderId}-${tokenRef}-${shopId}`;
+                  const importKey = `${folderId}-${shopId}-${importId}`;
                   importState.set(importKey, false);
                   startImport();
                 }}
