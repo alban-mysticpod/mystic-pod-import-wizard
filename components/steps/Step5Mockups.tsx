@@ -15,13 +15,12 @@ interface Step5Props {
   blueprintId: number | null; // Blueprint ID pour tracking des changements
   onNext: (files: SupabaseFile[]) => void;
   onBack?: () => void;
-  shouldGenerateMockups?: boolean; // Nouveau prop pour savoir si on doit générer les mockups
 }
 
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
-export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, onBack, shouldGenerateMockups }: Step5Props) {
+export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, onBack }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');

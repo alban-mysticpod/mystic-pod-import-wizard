@@ -33,7 +33,6 @@ const initialState: WizardState = {
   importLogs: [],
   isComplete: false,
   error: null,
-  shouldGenerateMockups: false, // Nouveau flag pour savoir si on doit générer les mockups
   pushToShopify: false, // Flag to push products to Shopify
 };
 
@@ -113,7 +112,6 @@ export function Wizard() {
       selectedPrintProviderId: preset.print_provider_id,
       // Stocker le preset sélectionné pour l'utiliser plus tard
       selectedPreset: preset,
-      shouldGenerateMockups: true, // Marquer qu'on doit générer les mockups
       currentStep: 3, // Renumbered: was 4, now 3 (Mockups)
     });
   }, [updateState]);
@@ -135,7 +133,6 @@ export function Wizard() {
       selectedPrintProviderId: product.print_provider_id,
       // Stocker le produit Printify sélectionné pour l'utiliser plus tard
       selectedPrintifyProduct: product,
-      shouldGenerateMockups: true, // Marquer qu'on doit générer les mockups
       currentStep: 3, // Renumbered: was 4, now 3 (Mockups)
     });
   }, [updateState]);
@@ -144,7 +141,6 @@ export function Wizard() {
   const handleStep3Next = useCallback((files: SupabaseFile[]) => {
     updateState({
       files,
-      shouldGenerateMockups: false, // Remettre à false après utilisation
       currentStep: 4, // Renumbered: was 5, now 4 (Preview)
     });
   }, [updateState]);
@@ -231,7 +227,6 @@ export function Wizard() {
               importId={state.importId}
               files={state.files}
               blueprintId={state.selectedBlueprint?.id || null}
-              shouldGenerateMockups={state.shouldGenerateMockups}
               onNext={handleStep3Next}
               onBack={handleBack}
             />
