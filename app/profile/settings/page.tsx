@@ -8,17 +8,8 @@ import { TokenModal } from '@/components/TokenModal';
 import { EditTokenModal } from '@/components/EditTokenModal';
 import { ConnectShopModal } from '@/components/ConnectShopModal';
 import { EditShopModal } from '@/components/EditShopModal';
-import { ApiToken, Store } from '@/types';
+import { ApiToken, Store, Preset } from '@/types';
 import { Key, Plus, Trash2, Layers, Star, Edit2, Store as StoreIcon } from 'lucide-react';
-
-interface Preset {
-  id: string;
-  name: string;
-  blueprint_id: number;
-  print_provider_id: number;
-  favorite: boolean;
-  created_at: string;
-}
 
 export default function SettingsPage() {
   const [tokens, setTokens] = useState<ApiToken[]>([]);
