@@ -12,6 +12,7 @@ interface Step5Props {
   folderId: string;
   importId: string;
   files: SupabaseFile[];
+  blueprintId: number | null; // Blueprint ID pour tracking des changements
   onNext: (files: SupabaseFile[]) => void;
   onBack?: () => void;
   shouldGenerateMockups?: boolean; // Nouveau prop pour savoir si on doit générer les mockups
@@ -20,19 +21,22 @@ interface Step5Props {
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
 
-export function Step5Mockups({ folderId, importId, files, onNext, onBack, shouldGenerateMockups }: Step5Props) {
+export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, onBack, shouldGenerateMockups }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
 
   const loadFiles = useCallback(async () => {
+    // Create unique key including blueprint ID to allow reloading when blueprint changes
+    const loadKey = `${folderId}-${blueprintId || 'none'}`;
+    
     // Check global loading state to prevent double calls
-    if (loadingState.get(folderId)) {
-      console.log('🛑 Already loading files for folder:', folderId, '- skipping duplicate call');
+    if (loadingState.get(loadKey)) {
+      console.log('🛑 Already loading files for key:', loadKey, '- skipping duplicate call');
       return;
     }
 
-    loadingState.set(folderId, true);
+    loadingState.set(loadKey, true);
     setIsLoading(true);
     setError('');
 
@@ -62,18 +66,22 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
       const errorMessage = err instanceof Error ? err.message : 'Failed to load files';
       setError(errorMessage);
       // Reset loading state on error to allow retry
-      loadingState.set(folderId, false);
+      const loadKey = `${folderId}-${blueprintId || 'none'}`;
+      loadingState.set(loadKey, false);
     } finally {
       setIsLoading(false);
     }
-  }, [folderId, importId, shouldGenerateMockups]);
+  }, [folderId, importId, blueprintId, shouldGenerateMockups]);
 
   useEffect(() => {
-    // Only load if we have a folderId, no files yet, and haven't already loaded this folder
-    if (folderId && files.length === 0 && !loadingState.get(folderId)) {
+    // Create unique key including blueprint ID to allow reloading when blueprint changes
+    const loadKey = `${folderId}-${blueprintId || 'none'}`;
+    
+    // Only load if we have a folderId, no files yet, and haven't already loaded this key
+    if (folderId && files.length === 0 && !loadingState.get(loadKey)) {
       loadFiles();
     }
-  }, [folderId, files.length, loadFiles]);
+  }, [folderId, blueprintId, files.length, loadFiles]);
 
   const handleNext = () => {
     onNext(currentFiles);

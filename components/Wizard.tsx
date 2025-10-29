@@ -230,6 +230,7 @@ export function Wizard() {
               folderId={state.folderId}
               importId={state.importId}
               files={state.files}
+              blueprintId={state.selectedBlueprint?.id || null}
               shouldGenerateMockups={state.shouldGenerateMockups}
               onNext={handleStep3Next}
               onBack={handleBack}
