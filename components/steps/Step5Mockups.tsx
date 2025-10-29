@@ -6,7 +6,7 @@ import { Card } from '@/components/Card';
 import { fetchImages, createMockupJob, pollMockupJobResult } from '@/lib/api';
 import { SupabaseFile } from '@/types';
 import { formatFileCount } from '@/lib/utils';
-import { ArrowLeft, ArrowRight, Eye, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, Image as ImageIcon, RefreshCw } from 'lucide-react';
 
 interface Step5Props {
   folderId: string;
@@ -26,12 +26,12 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
   const [isLoading, setIsLoading] = useState(files.length === 0);
   const [error, setError] = useState('');
 
-  const loadFiles = useCallback(async () => {
+  const loadFiles = useCallback(async (forceGenerate: boolean = false) => {
     // Create unique key including blueprint ID to allow reloading when blueprint changes
     const loadKey = `${folderId}-${blueprintId || 'none'}`;
     
     // Check global loading state to prevent double calls
-    if (loadingState.get(loadKey)) {
+    if (loadingState.get(loadKey) && !forceGenerate) {
       console.log('🛑 Already loading files for key:', loadKey, '- skipping duplicate call');
       return;
     }
@@ -41,9 +41,9 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
     setError('');
 
     try {
-      // Générer les mockups si nécessaire (pour les presets sélectionnés)
-      if (shouldGenerateMockups) {
-        console.log('🔄 Creating mockup job for preset selection, importId:', importId);
+      // Générer les mockups uniquement si forcé manuellement par l'utilisateur
+      if (forceGenerate) {
+        console.log('🔄 Creating mockup job (manual trigger), importId:', importId);
         
         // Créer le job de mockup
         const jobResult = await createMockupJob(importId);
@@ -71,7 +71,7 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
     } finally {
       setIsLoading(false);
     }
-  }, [folderId, importId, blueprintId, shouldGenerateMockups]);
+  }, [folderId, importId, blueprintId]);
 
   useEffect(() => {
     // Create unique key including blueprint ID to allow reloading when blueprint changes
@@ -87,13 +87,13 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
     onNext(currentFiles);
   };
 
-  const handleTryAgain = () => {
-    // Reset loading state and error to allow retry
-    loadingState.set(folderId, false);
+  const handleRegenerateMockups = () => {
+    // Reset loading state for current blueprint to allow regeneration
+    const loadKey = `${folderId}-${blueprintId || 'none'}`;
+    loadingState.set(loadKey, false);
     setError('');
-    setCurrentFiles([]);
-    // Trigger reload
-    loadFiles();
+    // Trigger reload with force generation
+    loadFiles(true);
   };
 
   if (isLoading) {
@@ -173,7 +173,7 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
                 </p>
                 <div className="flex gap-2 mt-3">
                   <Button
-                    onClick={handleTryAgain}
+                    onClick={handleRegenerateMockups}
                     variant="secondary"
                     size="sm"
                   >
@@ -312,13 +312,15 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
             <svg className="h-12 w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            <p className="text-gray-500 mt-2">No mockups found</p>
+            <p className="text-gray-500 mt-2">No mockups found for this design</p>
+            <p className="text-sm text-gray-400 mt-1">Generate mockups to preview how your designs will look on the product</p>
             <Button
-              onClick={loadFiles}
-              variant="secondary"
-              className="mt-4"
+              onClick={handleRegenerateMockups}
+              variant="primary"
+              className="mt-4 inline-flex items-center gap-2"
             >
-              Refresh
+              <RefreshCw className="w-4 h-4" />
+              Generate Mockups
             </Button>
           </div>
         )}
@@ -329,6 +331,18 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
               <Button onClick={onBack} variant="secondary" size="lg" className="inline-flex items-center gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Back
+              </Button>
+            )}
+            {currentFiles.length > 0 && (
+              <Button
+                onClick={handleRegenerateMockups}
+                variant="secondary"
+                size="lg"
+                disabled={isLoading}
+                className="inline-flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Regenerate Mockups
               </Button>
             )}
           </div>
