@@ -173,7 +173,7 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
                   </Button>
                   <Button
                     onClick={() => onNext(files)}
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     className="inline-flex items-center gap-1"
                   >
@@ -327,7 +327,7 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
           <div className="flex gap-3">
             <Button
               onClick={() => onNext(files)}
-              variant="outline"
+              variant="secondary"
               size="lg"
               className="inline-flex items-center gap-2"
             >
