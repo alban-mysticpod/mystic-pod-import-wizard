@@ -541,7 +541,9 @@ export default function SettingsPage() {
                         {store.name}
                       </span>
                       {store.is_default && (
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" title="Default shop" />
+                        <span title="Default shop">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                        </span>
                       )}
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
@@ -626,7 +628,9 @@ export default function SettingsPage() {
                         {store.name}
                       </span>
                       {store.is_default && (
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" title="Default shop" />
+                        <span title="Default shop">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                        </span>
                       )}
                       <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                     </div>
