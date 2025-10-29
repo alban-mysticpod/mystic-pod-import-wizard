@@ -111,7 +111,7 @@ export function Step5Mockups({ folderId, importId, files, onNext, onBack, should
             )}
             <Button 
               onClick={() => onNext(files)} 
-              variant="outline"
+              variant="secondary"
               className="inline-flex items-center gap-2"
             >
               Skip Mockups
