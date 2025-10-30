@@ -19,6 +19,8 @@ interface Step5Props {
 
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
+// Global map to track if mockups have been generated for a specific blueprint
+const mockupsGenerated = new Map<string, boolean>();
 
 export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, onBack }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
@@ -40,9 +42,14 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
     setError('');
 
     try {
-      // Générer les mockups uniquement si forcé manuellement par l'utilisateur
-      if (forceGenerate) {
-        console.log('🔄 Creating mockup job (manual trigger), importId:', importId);
+      // Générer les mockups si :
+      // 1. forceGenerate = true (click manuel sur Regenerate)
+      // 2. OU c'est la première fois pour ce blueprint (auto-génération)
+      const isFirstTime = !mockupsGenerated.get(loadKey);
+      const shouldGenerate = forceGenerate || isFirstTime;
+      
+      if (shouldGenerate) {
+        console.log(`🔄 Creating mockup job (${forceGenerate ? 'manual' : 'auto'} trigger), importId:`, importId);
         
         // Créer le job de mockup
         const jobResult = await createMockupJob(importId);
@@ -53,7 +60,11 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
           await pollMockupJobResult(importId, jobResult.id);
           
           console.log('✅ Mockup generation completed');
+          // Marquer comme généré pour ce blueprint
+          mockupsGenerated.set(loadKey, true);
         }
+      } else {
+        console.log('ℹ️ Mockups already generated for key:', loadKey, '- using cached version');
       }
 
       console.log('🖼️ Fetching files with mockups for folder:', folderId, 'importId:', importId);
@@ -133,7 +144,7 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
   return (
     <Card>
       <div className="space-y-6">
-        {/* Header with title and button */}
+        {/* Header with title and buttons */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Preview Mockups</h2>
@@ -145,15 +156,27 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
             </p>
           </div>
           {currentFiles.length > 0 && (
-            <Button
-              onClick={handleNext}
-              disabled={currentFiles.length === 0 || isLoading}
-              variant="success"
-              size="lg"
-              className="flex-shrink-0"
-            >
-              Continue to Final Preview
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleRegenerateMockups}
+                variant="secondary"
+                size="lg"
+                disabled={isLoading}
+                className="inline-flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Regenerate Mockups
+              </Button>
+              <Button
+                onClick={handleNext}
+                disabled={currentFiles.length === 0 || isLoading}
+                variant="success"
+                size="lg"
+                className="flex-shrink-0"
+              >
+                Continue to Final Preview
+              </Button>
+            </div>
           )}
         </div>
         {error && (
