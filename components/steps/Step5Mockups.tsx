@@ -19,8 +19,6 @@ interface Step5Props {
 
 // Global map to track loading state across component re-renders
 const loadingState = new Map<string, boolean>();
-// Global map to track if mockups have been generated for a specific blueprint
-const mockupsGenerated = new Map<string, boolean>();
 
 export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, onBack }: Step5Props) {
   const [currentFiles, setCurrentFiles] = useState<SupabaseFile[]>(files);
@@ -30,6 +28,9 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
   const loadFiles = useCallback(async (forceGenerate: boolean = false) => {
     // Create unique key including blueprint ID to allow reloading when blueprint changes
     const loadKey = `${folderId}-${blueprintId || 'none'}`;
+    
+    // Check if this is the first time loading this blueprint
+    const isFirstLoad = !loadingState.has(loadKey);
     
     // Check global loading state to prevent double calls
     if (loadingState.get(loadKey) && !forceGenerate) {
@@ -42,14 +43,11 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
     setError('');
 
     try {
-      // Générer les mockups si :
-      // 1. forceGenerate = true (click manuel sur Regenerate)
-      // 2. OU c'est la première fois pour ce blueprint (auto-génération)
-      const isFirstTime = !mockupsGenerated.get(loadKey);
-      const shouldGenerate = forceGenerate || isFirstTime;
-      
-      if (shouldGenerate) {
-        console.log(`🔄 Creating mockup job (${forceGenerate ? 'manual' : 'auto'} trigger), importId:`, importId);
+      // Générer les mockups si:
+      // 1. C'est la première fois (isFirstLoad)
+      // 2. OU si forcé manuellement (forceGenerate)
+      if (isFirstLoad || forceGenerate) {
+        console.log('🔄 Creating mockup job:', isFirstLoad ? '(first load - auto)' : '(manual trigger)', 'importId:', importId);
         
         // Créer le job de mockup
         const jobResult = await createMockupJob(importId);
@@ -60,11 +58,9 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
           await pollMockupJobResult(importId, jobResult.id);
           
           console.log('✅ Mockup generation completed');
-          // Marquer comme généré pour ce blueprint
-          mockupsGenerated.set(loadKey, true);
         }
       } else {
-        console.log('ℹ️ Mockups already generated for key:', loadKey, '- using cached version');
+        console.log('ℹ️ Loading cached mockups (not first load, no manual regeneration)');
       }
 
       console.log('🖼️ Fetching files with mockups for folder:', folderId, 'importId:', importId);
@@ -144,7 +140,7 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
   return (
     <Card>
       <div className="space-y-6">
-        {/* Header with title and buttons */}
+        {/* Header with title and button */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Preview Mockups</h2>
@@ -156,27 +152,15 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
             </p>
           </div>
           {currentFiles.length > 0 && (
-            <div className="flex gap-3">
-              <Button
-                onClick={handleRegenerateMockups}
-                variant="secondary"
-                size="lg"
-                disabled={isLoading}
-                className="inline-flex items-center gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                Regenerate Mockups
-              </Button>
-              <Button
-                onClick={handleNext}
-                disabled={currentFiles.length === 0 || isLoading}
-                variant="success"
-                size="lg"
-                className="flex-shrink-0"
-              >
-                Continue to Final Preview
-              </Button>
-            </div>
+            <Button
+              onClick={handleNext}
+              disabled={currentFiles.length === 0 || isLoading}
+              variant="success"
+              size="lg"
+              className="flex-shrink-0"
+            >
+              Continue to Final Preview
+            </Button>
           )}
         </div>
         {error && (
