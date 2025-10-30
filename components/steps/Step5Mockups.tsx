@@ -140,7 +140,7 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
   return (
     <Card>
       <div className="space-y-6">
-        {/* Header with title and button */}
+        {/* Header with title and buttons */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Preview Mockups</h2>
@@ -152,15 +152,26 @@ export function Step5Mockups({ folderId, importId, files, blueprintId, onNext, o
             </p>
           </div>
           {currentFiles.length > 0 && (
-            <Button
-              onClick={handleNext}
-              disabled={currentFiles.length === 0 || isLoading}
-              variant="success"
-              size="lg"
-              className="flex-shrink-0"
-            >
-              Continue to Final Preview
-            </Button>
+            <div className="flex gap-3 flex-shrink-0">
+              <Button
+                onClick={handleRegenerateMockups}
+                variant="secondary"
+                size="lg"
+                disabled={isLoading}
+                className="inline-flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Regenerate Mockups
+              </Button>
+              <Button
+                onClick={handleNext}
+                disabled={currentFiles.length === 0 || isLoading}
+                variant="success"
+                size="lg"
+              >
+                Continue to Final Preview
+              </Button>
+            </div>
           )}
         </div>
         {error && (

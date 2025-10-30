@@ -201,7 +201,7 @@ export async function pollImportStatus(
   const delays = [7000, 10000]; // 7s pour la première fois, puis 10s
   let delayIndex = 0;
   let attempts = 0;
-  const maxAttempts = 10; // Maximum 10 attempts
+  const maxAttempts = 20; // Maximum 20 attempts
 
   const poll = async (): Promise<any> => {
     attempts++;
@@ -385,7 +385,7 @@ export async function pollMockupJobResult(
   const delays = [7000, 10000]; // 7s pour la première fois, puis 10s
   let delayIndex = 0;
   let attempts = 0;
-  const maxAttempts = 10; // Maximum 10 attempts (timeout after ~3-4 minutes)
+  const maxAttempts = 20; // Maximum 20 attempts (timeout after ~3-4 minutes)
 
   const poll = async (): Promise<any> => {
     attempts++;
